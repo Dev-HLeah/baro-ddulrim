@@ -1,0 +1,24 @@
+{
+  "name": "baro-ddulrim",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@10.24.0",
+  "scripts": {
+    "dev": "pnpm -r --parallel dev",
+    "dev:web": "pnpm --filter @baro-ddulrim/web dev",
+    "dev:server": "pnpm --filter @baro-ddulrim/server dev",
+    "build": "pnpm -r build",
+    "build:web": "pnpm --filter @baro-ddulrim/web build",
+    "build:server": "pnpm --filter @baro-ddulrim/server build",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck",
+    "db:generate": "pnpm --filter @baro-ddulrim/server db:generate",
+    "db:migrate": "pnpm --filter @baro-ddulrim/server db:migrate",
+    "db:seed": "pnpm --filter @baro-ddulrim/server db:seed",
+    "format": "prettier --write \"**/*.{css,js,json,md,ts,tsx}\""
+  },
+  "devDependencies": {
+    "prettier": "latest",
+    "typescript": "^5.9.0"
+  }
+}

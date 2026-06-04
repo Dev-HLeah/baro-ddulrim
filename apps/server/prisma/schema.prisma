@@ -1,0 +1,459 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum ReportChannel {
+  WEB
+  APP
+  SMS
+  KAKAO
+  AI_CALL
+  PHONE
+}
+
+enum ReportStatus {
+  COLLECTING_INFO
+  AI_ANALYZED
+  ADMIN_REVIEW
+  CUSTOMER_INFO_REQUIRED
+  APPROVED_FOR_BIDDING
+  BIDDING
+  ASSIGNED
+  DISPATCH_SCHEDULED
+  DISPATCHED
+  IN_PROGRESS
+  RESOLVED
+  ON_HOLD
+  CANCELED
+  REJECTED
+}
+
+enum IssueType {
+  FLOOD
+  DRAIN
+  SEWER_BACKFLOW
+  ODOR
+  EMERGENCY
+  OTHER
+}
+
+enum Urgency {
+  NORMAL
+  URGENT
+  EMERGENCY
+}
+
+enum SenderType {
+  CUSTOMER
+  AI
+  ADMIN
+  CONTRACTOR
+  SYSTEM
+}
+
+enum MessageType {
+  TEXT
+  IMAGE
+  VIDEO
+  FILE
+  SYSTEM
+}
+
+enum AiProvider {
+  OPENAI
+  GEMINI
+}
+
+enum MapProvider {
+  KAKAO
+  NAVER
+}
+
+enum LocationSource {
+  CUSTOMER_INPUT
+  AI_CANDIDATE
+  ADMIN_CONFIRMED
+  CONTRACTOR_PROFILE
+  SYSTEM
+}
+
+enum LocationConfirmedBy {
+  CUSTOMER
+  ADMIN
+  SYSTEM
+}
+
+enum ActorType {
+  AI
+  ADMIN
+  CONTRACTOR
+  CUSTOMER
+  SYSTEM
+}
+
+enum ContractorStatus {
+  REVIEWING
+  APPROVED
+  ACTIVE
+  INACTIVE
+  RESTRICTED
+  REJECTED
+}
+
+enum BidStatus {
+  SUBMITTED
+  SELECTED
+  WITHDRAWN
+  REJECTED
+}
+
+enum WorkStatus {
+  DISPATCH_SCHEDULED
+  DISPATCHED
+  IN_PROGRESS
+  RESOLVED
+}
+
+enum TemplateChannel {
+  WEB
+  SMS
+  KAKAO
+  AI_CALL
+}
+
+model Customer {
+  id         String   @id @default(cuid())
+  phone      String   @unique
+  authUserId String?  @unique
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  reports Report[]
+}
+
+model AdminUser {
+  id         String   @id @default(cuid())
+  authUserId String?  @unique
+  email      String   @unique
+  name       String
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  assignments Assignment[] @relation("AssignedByAdmin")
+}
+
+model Report {
+  id                      String               @id @default(cuid())
+  reportNo                String               @unique
+  verificationCode        String
+  customerId              String
+  channel                 ReportChannel        @default(WEB)
+  status                  ReportStatus         @default(COLLECTING_INFO)
+  issueType               IssueType?
+  urgency                 Urgency              @default(NORMAL)
+  summary                 String?
+  description             String?              @db.Text
+  customerPhone           String
+  addressText             String?
+  roadAddressText         String?
+  placeName               String?
+  latitude                Decimal?             @db.Decimal(10, 7)
+  longitude               Decimal?             @db.Decimal(10, 7)
+  locationProvider        MapProvider?
+  locationProviderPlaceId String?
+  locationConfirmedAt     DateTime?
+  locationConfirmedBy     LocationConfirmedBy?
+  adminApprovedAt         DateTime?
+  assignedAt              DateTime?
+  resolvedAt              DateTime?
+  createdAt               DateTime             @default(now())
+  updatedAt               DateTime             @updatedAt
+
+  customer           Customer                  @relation(fields: [customerId], references: [id])
+  messages           ReportMessage[]
+  attachments        ReportAttachment[]
+  aiAnalyses         AiAnalysis[]
+  revisions          ReportRevision[]
+  statusHistory      ReportStatusHistory[]
+  locationCandidates ReportLocationCandidate[]
+  bids               Bid[]
+  assignment         Assignment?
+  workUpdates        WorkUpdate[]
+  templateUsages     MessageTemplateUsage[]
+
+  @@index([customerPhone])
+  @@index([status])
+  @@index([channel])
+  @@index([issueType])
+  @@index([urgency])
+  @@index([createdAt])
+}
+
+model ReportMessage {
+  id          String      @id @default(cuid())
+  reportId    String
+  senderType  SenderType
+  senderId    String?
+  messageType MessageType @default(TEXT)
+  content     String      @db.Text
+  createdAt   DateTime    @default(now())
+
+  report      Report             @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  attachments ReportAttachment[]
+
+  @@index([reportId, createdAt])
+}
+
+model ReportAttachment {
+  id           String   @id @default(cuid())
+  reportId     String
+  messageId    String?
+  fileType     String
+  fileUrl      String
+  originalName String?
+  createdAt    DateTime @default(now())
+
+  report  Report         @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  message ReportMessage? @relation(fields: [messageId], references: [id], onDelete: SetNull)
+
+  @@index([reportId])
+}
+
+model AiAnalysis {
+  id                String     @id @default(cuid())
+  reportId          String
+  provider          AiProvider
+  model             String
+  rawInput          Json?
+  rawOutput         Json?
+  summary           String?    @db.Text
+  issueType         IssueType?
+  urgency           Urgency?
+  missingFields     String[]
+  vendorDescription String?    @db.Text
+  confidence        Decimal?   @db.Decimal(5, 4)
+  needsReview       Boolean    @default(true)
+  createdAt         DateTime   @default(now())
+
+  report Report @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  @@index([reportId, createdAt])
+}
+
+model ReportRevision {
+  id         String    @id @default(cuid())
+  reportId   String
+  editorType ActorType
+  editorId   String?
+  fieldName  String
+  oldValue   Json?
+  newValue   Json?
+  reason     String?
+  createdAt  DateTime  @default(now())
+
+  report Report @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  @@index([reportId, createdAt])
+}
+
+model ReportStatusHistory {
+  id         String       @id @default(cuid())
+  reportId   String
+  fromStatus ReportStatus?
+  toStatus   ReportStatus
+  actorType  ActorType
+  actorId    String?
+  reason     String?
+  createdAt  DateTime     @default(now())
+
+  report Report @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  @@index([reportId, createdAt])
+  @@index([toStatus])
+}
+
+model ReportLocationCandidate {
+  id              String         @id @default(cuid())
+  reportId        String
+  provider        MapProvider
+  providerPlaceId String?
+  source          LocationSource
+  title           String
+  addressText     String?
+  roadAddressText String?
+  placeName       String?
+  category        String?
+  latitude        Decimal        @db.Decimal(10, 7)
+  longitude       Decimal        @db.Decimal(10, 7)
+  confidence      Decimal?       @db.Decimal(5, 4)
+  raw             Json?
+  createdAt       DateTime       @default(now())
+
+  report Report @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  @@index([reportId])
+  @@index([provider])
+}
+
+model ContractorAccount {
+  id         String   @id @default(cuid())
+  authUserId String?  @unique
+  email      String   @unique
+  name       String
+  phone      String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  company ContractorCompany?
+}
+
+model ContractorCompany {
+  id                     String           @id @default(cuid())
+  accountId              String           @unique
+  companyName            String
+  representativeName     String
+  businessNumber         String           @unique
+  businessLicenseFileUrl String?
+  companyPhotoUrl        String?
+  address                String?
+  latitude               Decimal?         @db.Decimal(10, 7)
+  longitude              Decimal?         @db.Decimal(10, 7)
+  serviceRegions         String[]
+  serviceRadiusKm        Int?
+  description            String?          @db.Text
+  status                 ContractorStatus @default(REVIEWING)
+  statusReason           String?
+  approvedAt             DateTime?
+  createdAt              DateTime         @default(now())
+  updatedAt              DateTime         @updatedAt
+
+  account     ContractorAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  bids        Bid[]
+  assignments Assignment[]
+  workUpdates WorkUpdate[]
+
+  @@index([status])
+}
+
+model Bid {
+  id                  String    @id @default(cuid())
+  reportId            String
+  contractorCompanyId String
+  estimatedPrice      Int?
+  availableTime       DateTime?
+  canWork             Boolean   @default(true)
+  workNote            String?   @db.Text
+  extraCostPolicy     String?   @db.Text
+  status              BidStatus @default(SUBMITTED)
+  submittedAt         DateTime  @default(now())
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  report            Report            @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  contractorCompany ContractorCompany @relation(fields: [contractorCompanyId], references: [id])
+  assignment        Assignment?
+
+  @@index([reportId])
+  @@index([contractorCompanyId])
+  @@unique([reportId, contractorCompanyId])
+}
+
+model Assignment {
+  id                        String   @id @default(cuid())
+  reportId                  String   @unique
+  bidId                     String   @unique
+  contractorCompanyId       String
+  assignedByAdminId         String?
+  selectionReason           String?
+  customerMessageTemplateId String?
+  customerMessageRendered   String?  @db.Text
+  assignedAt                DateTime @default(now())
+  createdAt                 DateTime @default(now())
+
+  report                  Report             @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  bid                     Bid                @relation(fields: [bidId], references: [id])
+  contractorCompany       ContractorCompany  @relation(fields: [contractorCompanyId], references: [id])
+  assignedByAdmin         AdminUser?         @relation("AssignedByAdmin", fields: [assignedByAdminId], references: [id])
+  customerMessageTemplate MessageTemplate?   @relation(fields: [customerMessageTemplateId], references: [id])
+  workUpdates             WorkUpdate[]
+  templateUsages          MessageTemplateUsage[]
+
+  @@index([contractorCompanyId])
+  @@index([assignedAt])
+}
+
+model WorkUpdate {
+  id                  String     @id @default(cuid())
+  reportId            String
+  assignmentId        String
+  contractorCompanyId String
+  status              WorkStatus
+  note                String?    @db.Text
+  finalPrice          Int?
+  createdAt           DateTime   @default(now())
+
+  report            Report            @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  assignment        Assignment        @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  contractorCompany ContractorCompany @relation(fields: [contractorCompanyId], references: [id])
+
+  @@index([reportId, createdAt])
+  @@index([assignmentId])
+}
+
+model MessageTemplate {
+  id        String          @id @default(cuid())
+  name      String
+  channel   TemplateChannel @default(WEB)
+  content   String          @db.Text
+  isActive  Boolean         @default(true)
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  versions    MessageTemplateVersion[]
+  usages      MessageTemplateUsage[]
+  assignments Assignment[]
+}
+
+model MessageTemplateVersion {
+  id         String   @id @default(cuid())
+  templateId String
+  versionNo  Int
+  content    String   @db.Text
+  createdAt  DateTime @default(now())
+
+  template MessageTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  usages   MessageTemplateUsage[]
+
+  @@unique([templateId, versionNo])
+}
+
+model MessageTemplateUsage {
+  id                String   @id @default(cuid())
+  templateId        String
+  templateVersionId String?
+  reportId          String
+  assignmentId      String?
+  renderedContent   String   @db.Text
+  createdAt         DateTime @default(now())
+
+  template        MessageTemplate         @relation(fields: [templateId], references: [id])
+  templateVersion MessageTemplateVersion? @relation(fields: [templateVersionId], references: [id])
+  report          Report                  @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  assignment      Assignment?             @relation(fields: [assignmentId], references: [id], onDelete: SetNull)
+
+  @@index([reportId])
+  @@index([templateId])
+}
+
+model AppSetting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     Json
+  updatedAt DateTime @updatedAt
+}
