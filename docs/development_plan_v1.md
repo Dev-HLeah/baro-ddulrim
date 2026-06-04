@@ -181,20 +181,28 @@ Supabase는 Seoul 리전을 제공하므로 한국 사용자 대상 서비스에
 권장 앱별 env 구조:
 
 - `apps/web/.env.example`
-- `apps/web/.env.local`
+- `apps/web/.env`
+- `apps/web/.env.dev`
+- `apps/web/.env.prd`
 - `apps/server/.env.example`
 - `apps/server/.env`
+- `apps/server/.env.dev`
+- `apps/server/.env.prd`
 - `apps/mobile/.env.example`
 - `apps/mobile/.env`
+- `apps/mobile/.env.dev`
+- `apps/mobile/.env.prd`
 
 원칙:
 
-- 실제 `.env`, `.env.local`, `.env.production` 파일은 git에 커밋하지 않는다.
+- 실제 `.env`, `.env.dev`, `.env.prd` 파일은 git에 커밋하지 않는다.
 - 각 앱은 자기 실행에 필요한 환경변수만 가진다.
 - 브라우저에 노출 가능한 값만 `NEXT_PUBLIC_` 접두사로 웹 env에 둔다.
 - Supabase service role key, DB URL, AI API key, Kakao REST API key 같은 비밀값은 백엔드 env에만 둔다.
 - Flutter 앱 env에는 public config만 둔다. 모바일 앱에 service role key나 AI API key를 넣지 않는다.
 - 배포 환경에서도 Vercel, Railway, Flutter 빌드 설정이 각각 자기 앱 env를 관리한다.
+- 개발 실행 시 `pnpm env:dev`가 각 앱의 `.env.dev`를 `.env`로 복사한다.
+- 운영 빌드용 로컬 환경 전환 시 `pnpm env:prd`가 각 앱의 `.env.prd`를 `.env`로 복사한다.
 
 앱별 env 상세 전략은 `docs/env_strategy_v1.md`를 기준으로 한다.
 

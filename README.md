@@ -35,7 +35,15 @@ pnpm typecheck
 앱별 env 파일을 사용합니다.
 
 - `apps/web/.env.example`
+- `apps/web/.env.dev`
+- `apps/web/.env.prd`
 - `apps/server/.env.example`
+- `apps/server/.env.dev`
+- `apps/server/.env.prd`
 - `apps/mobile/.env.example`
+- `apps/mobile/.env.dev`
+- `apps/mobile/.env.prd`
 
-실제 `.env` 파일은 git에 커밋하지 않습니다.
+실제 `.env`, `.env.dev`, `.env.prd` 파일은 git에 커밋하지 않습니다.
+
+개발 실행 전에는 `pnpm env:dev`가 각 앱의 `.env.dev`를 `.env`로 복사합니다. 운영 빌드용 로컬 환경을 맞출 때는 `pnpm env:prd` 또는 `pnpm build:prd`를 사용합니다.
