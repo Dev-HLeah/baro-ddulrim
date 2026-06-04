@@ -1,24 +1,160 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import { createClient } from "@supabase/supabase-js";
+import { randomUUID } from "node:crypto";
+import { extname } from "node:path";
 import { toIso, toNumber } from "../common/format";
 import {
   ActorType,
+  AiProvider,
   BidStatus,
   IssueType,
   LocationConfirmedBy,
   MapProvider,
   MessageType,
   Prisma,
+  ReportChannel,
   ReportStatus,
   SenderType,
   TemplateChannel,
   Urgency
 } from "../generated/prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
+import { CreateCustomerReportDto } from "./dto/create-customer-report.dto";
 import { ApproveReportDto, AssignReportDto, UpdateReportDto } from "./dto/report-actions.dto";
+
+type ReportUploadFile = {
+  buffer: Buffer;
+  mimetype: string;
+  originalname: string;
+  size: number;
+};
 
 @Injectable()
 export class ReportsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly config: ConfigService
+  ) {}
+
+  async createFromCustomer(dto: CreateCustomerReportDto, files: ReportUploadFile[]) {
+    const phone = this.requireCleanString(dto.phone, "연락처를 입력해 주세요.");
+    const location = this.requireCleanString(dto.location, "위치를 입력해 주세요.");
+    const description = this.requireCleanString(dto.description, "증상을 입력해 주세요.");
+    const reportNo = await this.generateReportNo();
+    const verificationCode = await this.generateVerificationCode();
+    const inferredIssueType = this.inferIssueType(`${location} ${description}`);
+    const inferredUrgency = this.inferUrgency(`${location} ${description}`);
+    const summary = this.cleanString(dto.summary) ?? this.summarizeDescription(description);
+    const missingFields = this.findMissingFields({ location, description });
+    const nextStatus =
+      missingFields.length > 0 ? ReportStatus.CUSTOMER_INFO_REQUIRED : ReportStatus.ADMIN_REVIEW;
+    const aiProvider = await this.getConfiguredAiProvider();
+
+    const created = await this.prisma.$transaction(async (tx) => {
+      const customer = await tx.customer.upsert({
+        where: { phone },
+        update: {},
+        create: { phone }
+      });
+
+      const report = await tx.report.create({
+        data: {
+          reportNo,
+          verificationCode,
+          customerId: customer.id,
+          customerPhone: phone,
+          channel: ReportChannel.WEB,
+          status: nextStatus,
+          issueType: inferredIssueType,
+          urgency: inferredUrgency,
+          summary,
+          description,
+          addressText: location,
+          placeName: this.cleanString(dto.placeName),
+          latitude: dto.latitude ?? null,
+          longitude: dto.longitude ?? null,
+          locationProvider: dto.latitude != null && dto.longitude != null ? MapProvider.KAKAO : null,
+          locationConfirmedAt: dto.latitude != null && dto.longitude != null ? new Date() : null,
+          locationConfirmedBy:
+            dto.latitude != null && dto.longitude != null ? LocationConfirmedBy.CUSTOMER : null
+        }
+      });
+
+      const message = await tx.reportMessage.create({
+        data: {
+          reportId: report.id,
+          senderType: SenderType.CUSTOMER,
+          messageType: MessageType.TEXT,
+          content: description
+        }
+      });
+
+      await tx.aiAnalysis.create({
+        data: {
+          reportId: report.id,
+          provider: aiProvider,
+          model: "initial-intake-classifier",
+          rawInput: {
+            phone,
+            location,
+            description
+          },
+          rawOutput: {
+            source: "local-rule",
+            note: "정식 AI 분석 연동 전 초기 접수 분류입니다."
+          },
+          summary,
+          issueType: inferredIssueType,
+          urgency: inferredUrgency,
+          missingFields,
+          vendorDescription: this.buildVendorDescription({
+            summary,
+            description,
+            location,
+            urgency: inferredUrgency
+          }),
+          confidence: 0.62,
+          needsReview: true
+        }
+      });
+
+      await tx.reportStatusHistory.createMany({
+        data: [
+          {
+            reportId: report.id,
+            fromStatus: null,
+            toStatus: ReportStatus.COLLECTING_INFO,
+            actorType: ActorType.CUSTOMER,
+            reason: "웹 신고 접수"
+          },
+          {
+            reportId: report.id,
+            fromStatus: ReportStatus.COLLECTING_INFO,
+            toStatus: ReportStatus.AI_ANALYZED,
+            actorType: ActorType.AI,
+            reason: "초기 자동 분류"
+          },
+          {
+            reportId: report.id,
+            fromStatus: ReportStatus.AI_ANALYZED,
+            toStatus: nextStatus,
+            actorType: ActorType.SYSTEM,
+            reason:
+              nextStatus === ReportStatus.CUSTOMER_INFO_REQUIRED
+                ? "필수 정보 추가 필요"
+                : "관리자 검수 대기"
+          }
+        ]
+      });
+
+      return { report, messageId: message.id };
+    });
+
+    await this.uploadReportAttachments(created.report.id, created.report.reportNo, created.messageId, files);
+
+    return this.findOne(created.report.reportNo);
+  }
 
   async findAll() {
     const reports = await this.prisma.report.findMany({
@@ -477,6 +613,218 @@ export class ReportsService {
       .filter((price): price is number => typeof price === "number");
 
     return prices.length > 0 ? Math.min(...prices) : null;
+  }
+
+  private async generateReportNo() {
+    const dateSegment = new Intl.DateTimeFormat("ko-KR", {
+      timeZone: "Asia/Seoul",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit"
+    })
+      .format(new Date())
+      .replace(/\D/g, "");
+
+    for (let attempt = 0; attempt < 8; attempt += 1) {
+      const suffix = Math.floor(1000 + Math.random() * 9000).toString();
+      const reportNo = `BD-${dateSegment}-${suffix}`;
+      const exists = await this.prisma.report.findUnique({ where: { reportNo } });
+
+      if (!exists) {
+        return reportNo;
+      }
+    }
+
+    return `BD-${dateSegment}-${randomUUID().slice(0, 8).toUpperCase()}`;
+  }
+
+  private async generateVerificationCode() {
+    for (let attempt = 0; attempt < 8; attempt += 1) {
+      const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+      const exists = await this.prisma.report.findFirst({ where: { verificationCode } });
+
+      if (!exists) {
+        return verificationCode;
+      }
+    }
+
+    return randomUUID().replace(/\D/g, "").slice(0, 6).padEnd(6, "0");
+  }
+
+  private requireCleanString(value: string | null | undefined, message: string) {
+    const cleaned = this.cleanString(value);
+
+    if (!cleaned) {
+      throw new BadRequestException(message);
+    }
+
+    return cleaned;
+  }
+
+  private findMissingFields(values: { description: string | null; location: string | null }) {
+    const missingFields: string[] = [];
+
+    if (!this.cleanString(values.location)) {
+      missingFields.push("위치");
+    }
+
+    if (!this.cleanString(values.description)) {
+      missingFields.push("증상");
+    }
+
+    return missingFields;
+  }
+
+  private inferIssueType(text: string): IssueType {
+    if (/침수|물\s*차|물바다|잠김/.test(text)) {
+      return IssueType.FLOOD;
+    }
+
+    if (/역류|넘치|오수/.test(text)) {
+      return IssueType.SEWER_BACKFLOW;
+    }
+
+    if (/악취|냄새|하수구\s*냄새/.test(text)) {
+      return IssueType.ODOR;
+    }
+
+    if (/긴급|출동/.test(text)) {
+      return IssueType.EMERGENCY;
+    }
+
+    if (/배수|하수|막힘|막혔|뚫/.test(text)) {
+      return IssueType.DRAIN;
+    }
+
+    return IssueType.OTHER;
+  }
+
+  private inferUrgency(text: string): Urgency {
+    if (/긴급|침수|지하|물\s*차|영업\s*중단/.test(text)) {
+      return Urgency.EMERGENCY;
+    }
+
+    if (/역류|넘치|오수|악취/.test(text)) {
+      return Urgency.URGENT;
+    }
+
+    return Urgency.NORMAL;
+  }
+
+  private summarizeDescription(description: string) {
+    const normalized = description.replace(/\s+/g, " ").trim();
+
+    if (normalized.length <= 48) {
+      return normalized;
+    }
+
+    return `${normalized.slice(0, 48)}...`;
+  }
+
+  private buildVendorDescription(values: {
+    description: string;
+    location: string;
+    summary: string;
+    urgency: Urgency;
+  }) {
+    return [
+      `요약: ${values.summary}`,
+      `위치: ${values.location}`,
+      `긴급도: ${values.urgency}`,
+      `상세: ${values.description}`
+    ].join("\n");
+  }
+
+  private async getConfiguredAiProvider() {
+    const setting = await this.prisma.appSetting.findUnique({
+      where: { key: "ai_provider" }
+    });
+    const value = String(setting?.value ?? "").toLowerCase();
+
+    return value.includes("gemini") ? AiProvider.GEMINI : AiProvider.OPENAI;
+  }
+
+  private async uploadReportAttachments(
+    reportId: string,
+    reportNo: string,
+    messageId: string,
+    files: ReportUploadFile[]
+  ) {
+    const validFiles = files.filter((file) => file.size > 0);
+
+    if (validFiles.length === 0) {
+      return;
+    }
+
+    const supabaseUrl = this.config.get<string>("SUPABASE_URL");
+    const serviceRoleKey = this.config.get<string>("SUPABASE_SERVICE_ROLE_KEY");
+    const bucketName = this.config.get<string>("SUPABASE_REPORT_ATTACHMENTS_BUCKET");
+
+    if (!supabaseUrl || !serviceRoleKey || !bucketName) {
+      throw new BadRequestException("첨부 파일 저장 환경변수가 설정되지 않았습니다.");
+    }
+
+    const supabase = createClient(supabaseUrl, serviceRoleKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    });
+
+    const attachments = await Promise.all(
+      validFiles.map(async (file, index) => {
+        if (!file.mimetype.startsWith("image/") && !file.mimetype.startsWith("video/")) {
+          throw new BadRequestException("사진 또는 영상 파일만 첨부할 수 있습니다.");
+        }
+
+        const extension = this.safeExtension(file);
+        const storagePath = `${reportNo}/${Date.now()}-${index}-${randomUUID()}${extension}`;
+        const { error } = await supabase.storage.from(bucketName).upload(storagePath, file.buffer, {
+          contentType: file.mimetype,
+          upsert: false
+        });
+
+        if (error) {
+          throw new BadRequestException(`첨부 파일 업로드에 실패했습니다: ${error.message}`);
+        }
+
+        const { data } = supabase.storage.from(bucketName).getPublicUrl(storagePath);
+
+        return {
+          reportId,
+          messageId,
+          fileType: file.mimetype,
+          fileUrl: data.publicUrl,
+          originalName: file.originalname
+        };
+      })
+    );
+
+    await this.prisma.reportAttachment.createMany({
+      data: attachments
+    });
+  }
+
+  private safeExtension(file: ReportUploadFile) {
+    const extension = extname(file.originalname).toLowerCase();
+
+    if (extension && /^[a-z0-9.]+$/.test(extension)) {
+      return extension;
+    }
+
+    if (file.mimetype === "image/png") {
+      return ".png";
+    }
+
+    if (file.mimetype === "image/webp") {
+      return ".webp";
+    }
+
+    if (file.mimetype.startsWith("video/")) {
+      return ".mp4";
+    }
+
+    return ".jpg";
   }
 
   private async findReportRecord(id: string) {

@@ -271,7 +271,8 @@ h2 {
   min-width: 0;
 }
 
-.photo-preview img {
+.photo-preview img,
+.photo-preview video {
   width: 100%;
   aspect-ratio: 1;
   object-fit: cover;

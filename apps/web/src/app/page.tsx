@@ -7,6 +7,7 @@ import {
   Phone,
   ShieldCheck
 } from "lucide-react";
+import { createCustomerReportAction } from "@/app/actions";
 import { ReportPhotoUploader } from "@/components/report-photo-uploader";
 import {
   getCustomerReportByVerification,
@@ -122,17 +123,24 @@ export default async function Home({
           </button>
         </div>
 
-        <form className="report-form">
+        <form action={createCustomerReportAction} className="report-form">
           <label htmlFor="phone">연락처</label>
           <div className="input-row">
             <Phone aria-hidden="true" size={18} />
-            <input id="phone" name="phone" placeholder="010-0000-0000" type="tel" />
+            <input
+              autoComplete="tel"
+              id="phone"
+              name="phone"
+              placeholder="010-0000-0000"
+              required
+              type="tel"
+            />
           </div>
 
           <label htmlFor="location">위치</label>
           <div className="input-row">
             <MapPin aria-hidden="true" size={18} />
-            <input id="location" name="location" placeholder="주소, 동 이름, 상호명" />
+            <input id="location" name="location" placeholder="주소, 동 이름, 상호명" required />
           </div>
 
           <label htmlFor="description">증상</label>
@@ -140,12 +148,13 @@ export default async function Home({
             id="description"
             name="description"
             placeholder="역류, 침수, 악취 등 현재 상황"
+            required
             rows={5}
           />
 
           <ReportPhotoUploader />
 
-          <button className="primary-button" type="button">
+          <button className="primary-button" type="submit">
             신고 접수 시작
             <ArrowRight aria-hidden="true" size={18} />
           </button>
