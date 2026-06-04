@@ -598,6 +598,22 @@ h2 {
   grid-column: 1 / -1;
 }
 
+.checkbox-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  color: var(--color-text);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.checkbox-field input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--color-primary);
+}
+
 .action-row,
 .admin-action-stack {
   display: flex;
@@ -1101,6 +1117,60 @@ h2 {
   font-size: 14px;
 }
 
+.template-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.template-card {
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04);
+}
+
+.template-meta-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.template-meta-row > span {
+  color: var(--color-muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.template-version-list {
+  display: grid;
+  gap: 10px;
+  border-top: 1px solid var(--color-line);
+  padding-top: 14px;
+}
+
+.template-version-entry {
+  display: grid;
+  gap: 5px;
+}
+
+.template-version-entry span {
+  color: var(--color-muted);
+  font-size: 12px;
+}
+
+.template-version-entry p {
+  margin: 0;
+  color: var(--color-muted);
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
 .map-page {
   background: var(--color-bg);
 }
@@ -1162,6 +1232,7 @@ h2 {
   .contractor-company-list,
   .opportunity-grid,
   .assignment-grid,
+  .template-grid,
   .form-grid {
     grid-template-columns: 1fr;
   }

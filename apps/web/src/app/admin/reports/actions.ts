@@ -84,7 +84,8 @@ export async function assignBidAction(reportNo: string, formData: FormData) {
     method: "POST",
     body: JSON.stringify({
       bidId: textValue(formData, "bidId"),
-      selectionReason: textValue(formData, "selectionReason")
+      selectionReason: textValue(formData, "selectionReason"),
+      templateId: textValue(formData, "templateId")
     })
   });
 

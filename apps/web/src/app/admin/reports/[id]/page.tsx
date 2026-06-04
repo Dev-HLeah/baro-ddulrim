@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, MapPin } from "lucide-react";
 import { AdminShell } from "@/components/admin-shell";
-import { getReport } from "@/lib/admin-api";
+import { getMessageTemplates, getReport } from "@/lib/admin-api";
 import {
   actorLabels,
   bidStatusLabels,
@@ -37,12 +37,15 @@ export default async function AdminReportDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const report = await getReport(id);
+  const [report, templates] = await Promise.all([getReport(id), getMessageTemplates()]);
 
   if (!report) {
     notFound();
   }
 
+  const activeWebTemplates = templates.filter(
+    (template) => template.isActive && template.channel === "WEB"
+  );
   const latestAi = report.aiAnalyses[0];
   const canApprove = !closedStatuses.includes(report.status) && report.status !== "BIDDING";
   const canAssign = report.status === "BIDDING" && !report.assignment;
@@ -296,6 +299,17 @@ export default async function AdminReportDetailPage({
                   <label className="form-field">
                     <span>선택 사유</span>
                     <input name="selectionReason" placeholder="견적과 출동 시간이 적합함" />
+                  </label>
+                  <label className="form-field">
+                    <span>고객 안내 템플릿</span>
+                    <select name="templateId" defaultValue="">
+                      <option value="">기본 템플릿</option>
+                      {activeWebTemplates.map((template) => (
+                        <option key={template.id} value={template.id}>
+                          {template.name}
+                        </option>
+                      ))}
+                    </select>
                   </label>
                   <button className="secondary-button" type="submit">
                     이 업체 배정

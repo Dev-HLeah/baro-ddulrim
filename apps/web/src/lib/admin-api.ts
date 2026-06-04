@@ -132,6 +132,24 @@ export type ReportDetail = ReportListItem & {
   }>;
 };
 
+export type MessageTemplate = {
+  id: string;
+  name: string;
+  channel: string;
+  content: string;
+  isActive: boolean;
+  usageCount: number;
+  versionCount: number;
+  createdAt: string | null;
+  updatedAt: string | null;
+  versions: Array<{
+    id: string;
+    versionNo: number;
+    content: string;
+    createdAt: string | null;
+  }>;
+};
+
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
 
 async function fetchJson<T>(path: string, fallback: T): Promise<T> {
@@ -176,4 +194,8 @@ export function getReports() {
 
 export function getReport(id: string) {
   return fetchJson<ReportDetail | null>(`/reports/${encodeURIComponent(id)}`, null);
+}
+
+export function getMessageTemplates() {
+  return fetchJson<MessageTemplate[]>("/message-templates", []);
 }

@@ -39,6 +39,13 @@ export const channelLabels: Record<string, string> = {
   PHONE: "전화"
 };
 
+export const templateChannelLabels: Record<string, string> = {
+  WEB: "웹",
+  SMS: "문자",
+  KAKAO: "카카오톡",
+  AI_CALL: "AI 전화"
+};
+
 export const actorLabels: Record<string, string> = {
   AI: "AI",
   ADMIN: "관리자",
