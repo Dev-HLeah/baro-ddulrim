@@ -930,13 +930,15 @@ h2 {
   box-shadow: 0 0 0 3px rgba(30, 155, 215, 0.1);
 }
 
-.opportunity-grid {
+.opportunity-grid,
+.assignment-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
 }
 
-.opportunity-card {
+.opportunity-card,
+.assignment-work-card {
   display: grid;
   gap: 14px;
   min-width: 0;
@@ -946,13 +948,15 @@ h2 {
   background: #fbfdff;
 }
 
-.opportunity-card h3 {
+.opportunity-card h3,
+.assignment-work-card h3 {
   margin: 4px 0 0;
   font-size: 18px;
   line-height: 1.35;
 }
 
-.opportunity-card p {
+.opportunity-card p,
+.assignment-work-card p {
   margin: 0;
   color: var(--color-muted);
   line-height: 1.6;
@@ -985,6 +989,31 @@ h2 {
 
 .bid-inline-status small {
   color: var(--color-muted);
+}
+
+.work-update-list {
+  display: grid;
+  gap: 8px;
+  padding-top: 4px;
+}
+
+.work-update-entry {
+  display: grid;
+  gap: 4px;
+  padding: 12px;
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.work-update-entry span {
+  color: var(--color-muted);
+  font-size: 12px;
+}
+
+.work-update-entry strong {
+  color: var(--color-primary-dark);
+  font-size: 14px;
 }
 
 .map-page {
@@ -1047,6 +1076,7 @@ h2 {
   .bid-grid,
   .contractor-company-list,
   .opportunity-grid,
+  .assignment-grid,
   .form-grid {
     grid-template-columns: 1fr;
   }

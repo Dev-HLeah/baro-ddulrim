@@ -4,10 +4,12 @@ import {
   ActorType,
   BidStatus,
   ContractorStatus,
-  ReportStatus
+  ReportStatus,
+  WorkStatus
 } from "../generated/prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
 import { SubmitBidDto } from "./dto/submit-bid.dto";
+import { SubmitWorkUpdateDto } from "./dto/submit-work-update.dto";
 
 const usableContractorStatuses: ContractorStatus[] = [
   ContractorStatus.APPROVED,
@@ -18,6 +20,13 @@ const biddableReportStatuses: ReportStatus[] = [
   ReportStatus.APPROVED_FOR_BIDDING,
   ReportStatus.BIDDING
 ];
+
+const reportStatusByWorkStatus: Record<WorkStatus, ReportStatus> = {
+  [WorkStatus.DISPATCH_SCHEDULED]: ReportStatus.DISPATCH_SCHEDULED,
+  [WorkStatus.DISPATCHED]: ReportStatus.DISPATCHED,
+  [WorkStatus.IN_PROGRESS]: ReportStatus.IN_PROGRESS,
+  [WorkStatus.RESOLVED]: ReportStatus.RESOLVED
+};
 
 @Injectable()
 export class ContractorsService {
@@ -150,6 +159,25 @@ export class ContractorsService {
     }));
   }
 
+  async findAssignments(companyId: string) {
+    const company = await this.findUsableCompany(companyId);
+    const assignments = await this.prisma.assignment.findMany({
+      where: {
+        contractorCompanyId: company.id
+      },
+      orderBy: { assignedAt: "desc" },
+      include: {
+        bid: true,
+        report: true,
+        workUpdates: {
+          orderBy: { createdAt: "asc" }
+        }
+      }
+    });
+
+    return assignments.map((assignment) => this.serializeAssignment(assignment));
+  }
+
   async submitBid(companyId: string, dto: SubmitBidDto) {
     const availableTime = this.parseAvailableTime(dto.availableTime);
 
@@ -243,6 +271,76 @@ export class ContractorsService {
     return this.serializeBid(bid);
   }
 
+  async submitWorkUpdate(companyId: string, assignmentId: string, dto: SubmitWorkUpdateDto) {
+    if (dto.status === WorkStatus.RESOLVED && dto.finalPrice == null) {
+      throw new BadRequestException("해결 완료 처리에는 최종 금액이 필요합니다.");
+    }
+
+    const assignment = await this.prisma.$transaction(async (tx) => {
+      const existingAssignment = await tx.assignment.findFirst({
+        where: {
+          id: assignmentId,
+          contractorCompanyId: companyId
+        },
+        include: {
+          report: true
+        }
+      });
+
+      if (!existingAssignment) {
+        throw new NotFoundException("배정 작업을 찾을 수 없습니다.");
+      }
+
+      const nextReportStatus = reportStatusByWorkStatus[dto.status];
+      const now = new Date();
+      const note = this.cleanString(dto.note);
+
+      await tx.workUpdate.create({
+        data: {
+          reportId: existingAssignment.reportId,
+          assignmentId: existingAssignment.id,
+          contractorCompanyId: existingAssignment.contractorCompanyId,
+          status: dto.status,
+          note,
+          finalPrice: dto.status === WorkStatus.RESOLVED ? dto.finalPrice ?? null : null
+        }
+      });
+
+      await tx.report.update({
+        where: { id: existingAssignment.reportId },
+        data: {
+          status: nextReportStatus,
+          resolvedAt: dto.status === WorkStatus.RESOLVED ? existingAssignment.report.resolvedAt ?? now : undefined
+        }
+      });
+
+      if (existingAssignment.report.status !== nextReportStatus) {
+        await tx.reportStatusHistory.create({
+          data: {
+            reportId: existingAssignment.reportId,
+            fromStatus: existingAssignment.report.status,
+            toStatus: nextReportStatus,
+            actorType: ActorType.CONTRACTOR,
+            reason: note ?? this.defaultWorkUpdateReason(dto.status)
+          }
+        });
+      }
+
+      return tx.assignment.findUniqueOrThrow({
+        where: { id: existingAssignment.id },
+        include: {
+          bid: true,
+          report: true,
+          workUpdates: {
+            orderBy: { createdAt: "asc" }
+          }
+        }
+      });
+    });
+
+    return this.serializeAssignment(assignment);
+  }
+
   private async findUsableCompany(companyId: string) {
     const company = await this.prisma.contractorCompany.findUnique({
       where: { id: companyId }
@@ -283,6 +381,102 @@ export class ContractorsService {
       createdAt: toIso(bid.createdAt),
       updatedAt: toIso(bid.updatedAt)
     };
+  }
+
+  private serializeAssignment(assignment: {
+    id: string;
+    reportId: string;
+    bidId: string;
+    contractorCompanyId: string;
+    selectionReason: string | null;
+    customerMessageRendered: string | null;
+    assignedAt: Date;
+    createdAt: Date;
+    bid: {
+      estimatedPrice: number | null;
+      availableTime: Date | null;
+      workNote: string | null;
+      extraCostPolicy: string | null;
+    };
+    report: {
+      id: string;
+      reportNo: string;
+      status: ReportStatus;
+      issueType: string | null;
+      urgency: string;
+      summary: string | null;
+      description: string | null;
+      addressText: string | null;
+      roadAddressText: string | null;
+      placeName: string | null;
+      latitude: Parameters<typeof toNumber>[0];
+      longitude: Parameters<typeof toNumber>[0];
+      assignedAt: Date | null;
+      resolvedAt: Date | null;
+      createdAt: Date;
+    };
+    workUpdates: Array<{
+      id: string;
+      status: WorkStatus;
+      note: string | null;
+      finalPrice: number | null;
+      createdAt: Date;
+    }>;
+  }) {
+    const latestWorkUpdate = assignment.workUpdates.at(-1) ?? null;
+
+    return {
+      id: assignment.id,
+      reportId: assignment.reportId,
+      bidId: assignment.bidId,
+      contractorCompanyId: assignment.contractorCompanyId,
+      selectionReason: assignment.selectionReason,
+      customerMessageRendered: assignment.customerMessageRendered,
+      assignedAt: toIso(assignment.assignedAt),
+      createdAt: toIso(assignment.createdAt),
+      bid: {
+        estimatedPrice: assignment.bid.estimatedPrice,
+        availableTime: toIso(assignment.bid.availableTime),
+        workNote: assignment.bid.workNote,
+        extraCostPolicy: assignment.bid.extraCostPolicy
+      },
+      report: {
+        id: assignment.report.id,
+        reportNo: assignment.report.reportNo,
+        status: assignment.report.status,
+        issueType: assignment.report.issueType,
+        urgency: assignment.report.urgency,
+        summary: assignment.report.summary,
+        description: assignment.report.description,
+        addressText: assignment.report.addressText,
+        roadAddressText: assignment.report.roadAddressText,
+        placeName: assignment.report.placeName,
+        latitude: toNumber(assignment.report.latitude),
+        longitude: toNumber(assignment.report.longitude),
+        assignedAt: toIso(assignment.report.assignedAt),
+        resolvedAt: toIso(assignment.report.resolvedAt),
+        createdAt: toIso(assignment.report.createdAt)
+      },
+      latestWorkStatus: latestWorkUpdate?.status ?? null,
+      workUpdates: assignment.workUpdates.map((update) => ({
+        id: update.id,
+        status: update.status,
+        note: update.note,
+        finalPrice: update.finalPrice,
+        createdAt: toIso(update.createdAt)
+      }))
+    };
+  }
+
+  private defaultWorkUpdateReason(status: WorkStatus) {
+    const labels: Record<WorkStatus, string> = {
+      [WorkStatus.DISPATCH_SCHEDULED]: "출동 예정",
+      [WorkStatus.DISPATCHED]: "출동 완료",
+      [WorkStatus.IN_PROGRESS]: "처리중",
+      [WorkStatus.RESOLVED]: "해결 완료"
+    };
+
+    return labels[status];
   }
 
   private cleanString(value: string | null | undefined) {

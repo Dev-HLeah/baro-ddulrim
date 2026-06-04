@@ -68,6 +68,48 @@ export type ContractorBidWithReport = ContractorBid & {
   };
 };
 
+export type ContractorAssignment = {
+  id: string;
+  reportId: string;
+  bidId: string;
+  contractorCompanyId: string;
+  selectionReason: string | null;
+  customerMessageRendered: string | null;
+  assignedAt: string | null;
+  createdAt: string | null;
+  bid: {
+    estimatedPrice: number | null;
+    availableTime: string | null;
+    workNote: string | null;
+    extraCostPolicy: string | null;
+  };
+  report: {
+    id: string;
+    reportNo: string;
+    status: string;
+    issueType: string | null;
+    urgency: string;
+    summary: string | null;
+    description: string | null;
+    addressText: string | null;
+    roadAddressText: string | null;
+    placeName: string | null;
+    latitude: number | null;
+    longitude: number | null;
+    assignedAt: string | null;
+    resolvedAt: string | null;
+    createdAt: string | null;
+  };
+  latestWorkStatus: string | null;
+  workUpdates: Array<{
+    id: string;
+    status: string;
+    note: string | null;
+    finalPrice: number | null;
+    createdAt: string | null;
+  }>;
+};
+
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
 
 async function fetchJson<T>(path: string, fallback: T): Promise<T> {
@@ -99,4 +141,11 @@ export function getContractorOpportunities(companyId: string) {
 
 export function getContractorBids(companyId: string) {
   return fetchJson<ContractorBidWithReport[]>(`/contractors/${encodeURIComponent(companyId)}/bids`, []);
+}
+
+export function getContractorAssignments(companyId: string) {
+  return fetchJson<ContractorAssignment[]>(
+    `/contractors/${encodeURIComponent(companyId)}/assignments`,
+    []
+  );
 }

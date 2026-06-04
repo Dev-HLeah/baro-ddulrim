@@ -51,3 +51,32 @@ export async function submitContractorBidAction(companyId: string, reportId: str
   revalidatePath("/contractor");
   redirect(`/contractor?companyId=${encodeURIComponent(companyId)}`);
 }
+
+export async function submitWorkUpdateAction(companyId: string, assignmentId: string, formData: FormData) {
+  const response = await fetch(
+    `${apiBaseUrl}/contractors/${encodeURIComponent(companyId)}/assignments/${encodeURIComponent(
+      assignmentId
+    )}/work-updates`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        status: textValue(formData, "status"),
+        note: textValue(formData, "note"),
+        finalPrice: numberValue(formData, "finalPrice")
+      })
+    }
+  );
+
+  if (!response.ok) {
+    const message = await response.text();
+    throw new Error(message || "작업 상태를 저장하지 못했습니다.");
+  }
+
+  revalidatePath("/contractor");
+  revalidatePath("/admin");
+  revalidatePath("/admin/reports");
+  redirect(`/contractor?companyId=${encodeURIComponent(companyId)}`);
+}
