@@ -1,4 +1,5 @@
 import { ArrowRight, ClipboardList, MapPin, Phone, ShieldCheck } from "lucide-react";
+import { ReportPhotoUploader } from "@/components/report-photo-uploader";
 
 const recentReports = [
   {
@@ -56,6 +57,8 @@ export default function Home() {
             placeholder="역류, 침수, 악취 등 현재 상황"
             rows={5}
           />
+
+          <ReportPhotoUploader />
 
           <button className="primary-button" type="button">
             신고 접수 시작
