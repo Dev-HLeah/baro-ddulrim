@@ -3,6 +3,7 @@ import { ConfigModule } from "@nestjs/config";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
 import { ContractorsModule } from "./contractors/contractors.module";
+import { CustomersModule } from "./customers/customers.module";
 import { DashboardModule } from "./dashboard/dashboard.module";
 import { PrismaModule } from "./prisma/prisma.module";
 import { ReportsModule } from "./reports/reports.module";
@@ -16,6 +17,7 @@ import { ReportsModule } from "./reports/reports.module";
     PrismaModule,
     DashboardModule,
     ContractorsModule,
+    CustomersModule,
     ReportsModule
   ],
   controllers: [AppController],
