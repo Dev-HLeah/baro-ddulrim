@@ -878,9 +878,113 @@ h2 {
   box-shadow: none;
 }
 
+.contractor-page {
+  background: #f5f8fb;
+}
+
 .workspace-header {
   display: grid;
   gap: 4px;
+}
+
+.contractor-company-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.company-switch-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 6px 10px;
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--color-text);
+  text-decoration: none;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04);
+}
+
+.company-switch-card svg {
+  grid-row: span 2;
+  color: var(--color-primary-dark);
+}
+
+.company-switch-card span {
+  overflow: hidden;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.company-switch-card small {
+  color: var(--color-muted);
+  line-height: 1.4;
+}
+
+.company-switch-card.active {
+  border-color: #7ac7e8;
+  background: #f5fbff;
+  box-shadow: 0 0 0 3px rgba(30, 155, 215, 0.1);
+}
+
+.opportunity-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.opportunity-card {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+  background: #fbfdff;
+}
+
+.opportunity-card h3 {
+  margin: 4px 0 0;
+  font-size: 18px;
+  line-height: 1.35;
+}
+
+.opportunity-card p {
+  margin: 0;
+  color: var(--color-muted);
+  line-height: 1.6;
+}
+
+.opportunity-head,
+.bid-inline-status {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.opportunity-head > div {
+  min-width: 0;
+}
+
+.bid-inline-status {
+  align-items: center;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #eef8fc;
+}
+
+.bid-inline-status strong {
+  color: var(--color-primary-dark);
+}
+
+.bid-inline-status small {
+  color: var(--color-muted);
 }
 
 .map-page {
@@ -941,6 +1045,8 @@ h2 {
 
   .detail-grid,
   .bid-grid,
+  .contractor-company-list,
+  .opportunity-grid,
   .form-grid {
     grid-template-columns: 1fr;
   }
