@@ -17,6 +17,7 @@
     "typecheck": "pnpm -r typecheck",
     "db:generate": "pnpm --filter @baro-ddulrim/server db:generate",
     "db:migrate": "pnpm --filter @baro-ddulrim/server db:migrate",
+    "db:push": "pnpm --filter @baro-ddulrim/server db:push",
     "db:seed": "pnpm --filter @baro-ddulrim/server db:seed",
     "format": "prettier --write \"**/*.{css,js,json,md,ts,tsx}\""
   },
