@@ -47,6 +47,25 @@ export const actorLabels: Record<string, string> = {
   SYSTEM: "시스템"
 };
 
+export const bidStatusLabels: Record<string, string> = {
+  SUBMITTED: "제출",
+  SELECTED: "선택",
+  WITHDRAWN: "철회",
+  REJECTED: "미선정"
+};
+
+export const reportFieldLabels: Record<string, string> = {
+  summary: "요약",
+  description: "상세 내용",
+  issueType: "유형",
+  urgency: "긴급도",
+  addressText: "주소",
+  roadAddressText: "도로명 주소",
+  placeName: "장소명",
+  latitude: "위도",
+  longitude: "경도"
+};
+
 export function labelOf(labels: Record<string, string>, value: string | null | undefined) {
   if (!value) {
     return "-";

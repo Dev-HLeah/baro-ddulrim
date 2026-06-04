@@ -5,16 +5,31 @@ import { AdminShell } from "@/components/admin-shell";
 import { getReport } from "@/lib/admin-api";
 import {
   actorLabels,
+  bidStatusLabels,
   channelLabels,
   formatCurrency,
   formatDateTime,
   issueTypeLabels,
   labelOf,
+  reportFieldLabels,
   statusLabels,
   urgencyLabels
 } from "@/lib/labels";
+import { approveReportAction, assignBidAction, updateReportAction } from "../actions";
 
 export const dynamic = "force-dynamic";
+
+const issueOptions = ["FLOOD", "DRAIN", "SEWER_BACKFLOW", "ODOR", "EMERGENCY", "OTHER"];
+const urgencyOptions = ["NORMAL", "URGENT", "EMERGENCY"];
+const closedStatuses = ["ASSIGNED", "RESOLVED", "CANCELED", "REJECTED"];
+
+function formatRevisionValue(value: string | number | boolean | null) {
+  if (value == null || value === "") {
+    return "-";
+  }
+
+  return String(value);
+}
 
 export default async function AdminReportDetailPage({
   params
@@ -29,6 +44,11 @@ export default async function AdminReportDetailPage({
   }
 
   const latestAi = report.aiAnalyses[0];
+  const canApprove = !closedStatuses.includes(report.status) && report.status !== "BIDDING";
+  const canAssign = report.status === "BIDDING" && !report.assignment;
+  const updateReport = updateReportAction.bind(null, report.reportNo);
+  const approveReport = approveReportAction.bind(null, report.reportNo);
+  const assignBid = assignBidAction.bind(null, report.reportNo);
 
   return (
     <AdminShell>
@@ -52,6 +72,118 @@ export default async function AdminReportDetailPage({
           </span>
         </div>
       </header>
+
+      <section className="detail-grid">
+        <article className="panel-section">
+          <h2>신고 내용 수정</h2>
+          <form action={updateReport} className="admin-form">
+            <div className="form-grid">
+              <label className="form-field">
+                <span>요약</span>
+                <input name="summary" defaultValue={report.summary ?? ""} />
+              </label>
+              <label className="form-field">
+                <span>유형</span>
+                <select name="issueType" defaultValue={report.issueType ?? ""}>
+                  <option value="">미정</option>
+                  {issueOptions.map((issueType) => (
+                    <option key={issueType} value={issueType}>
+                      {labelOf(issueTypeLabels, issueType)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="form-field">
+                <span>긴급도</span>
+                <select name="urgency" defaultValue={report.urgency}>
+                  {urgencyOptions.map((urgency) => (
+                    <option key={urgency} value={urgency}>
+                      {labelOf(urgencyLabels, urgency)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="form-field">
+                <span>장소명</span>
+                <input name="placeName" defaultValue={report.placeName ?? ""} />
+              </label>
+              <label className="form-field">
+                <span>주소</span>
+                <input name="addressText" defaultValue={report.addressText ?? ""} />
+              </label>
+              <label className="form-field">
+                <span>도로명 주소</span>
+                <input name="roadAddressText" defaultValue={report.roadAddressText ?? ""} />
+              </label>
+              <label className="form-field">
+                <span>위도</span>
+                <input
+                  inputMode="decimal"
+                  name="latitude"
+                  defaultValue={report.latitude?.toString() ?? ""}
+                />
+              </label>
+              <label className="form-field">
+                <span>경도</span>
+                <input
+                  inputMode="decimal"
+                  name="longitude"
+                  defaultValue={report.longitude?.toString() ?? ""}
+                />
+              </label>
+            </div>
+            <label className="form-field textarea-field">
+              <span>상세 내용</span>
+              <textarea name="description" defaultValue={report.description ?? ""} />
+            </label>
+            <label className="form-field">
+              <span>수정 사유</span>
+              <input name="reason" placeholder="관리자 신고 내용 수정" />
+            </label>
+            <div className="action-row">
+              <button className="primary-button" type="submit">
+                수정 저장
+              </button>
+            </div>
+          </form>
+        </article>
+
+        <article className="panel-section">
+          <h2>관리자 작업</h2>
+          <div className="admin-action-stack">
+            <dl className="info-list">
+              <div>
+                <dt>현재 상태</dt>
+                <dd>{labelOf(statusLabels, report.status)}</dd>
+              </div>
+              <div>
+                <dt>승인 시각</dt>
+                <dd>{formatDateTime(report.adminApprovedAt)}</dd>
+              </div>
+              <div>
+                <dt>입찰 수</dt>
+                <dd>{report.bids.length}건</dd>
+              </div>
+            </dl>
+            {canApprove ? (
+              <form action={approveReport} className="admin-form compact-form">
+                <label className="form-field">
+                  <span>승인 사유</span>
+                  <input name="reason" placeholder="관리자 입찰 승인" />
+                </label>
+                <div className="action-row">
+                  <button className="primary-button" type="submit">
+                    입찰 승인
+                  </button>
+                </div>
+              </form>
+            ) : null}
+            {report.assignment ? (
+              <p className="empty-text">이미 업체 배정이 완료되었습니다.</p>
+            ) : null}
+          </div>
+        </article>
+      </section>
 
       <section className="detail-grid">
         <article className="panel-section">
@@ -144,7 +276,7 @@ export default async function AdminReportDetailPage({
             <article className="bid-card" key={bid.id}>
               <div>
                 <strong>{bid.contractorCompanyName}</strong>
-                <span className="status-badge">{bid.status}</span>
+                <span className="status-badge">{labelOf(bidStatusLabels, bid.status)}</span>
               </div>
               <dl className="info-list compact-list">
                 <div>
@@ -158,6 +290,18 @@ export default async function AdminReportDetailPage({
               </dl>
               <p>{bid.workNote ?? "작업 메모 없음"}</p>
               <small>{bid.extraCostPolicy ?? "추가 비용 조건 없음"}</small>
+              {canAssign && bid.status === "SUBMITTED" ? (
+                <form action={assignBid} className="admin-form compact-form">
+                  <input name="bidId" type="hidden" value={bid.id} />
+                  <label className="form-field">
+                    <span>선택 사유</span>
+                    <input name="selectionReason" placeholder="견적과 출동 시간이 적합함" />
+                  </label>
+                  <button className="secondary-button" type="submit">
+                    이 업체 배정
+                  </button>
+                </form>
+              ) : null}
             </article>
           ))}
           {report.bids.length === 0 ? <p className="empty-text">입찰 내역이 없습니다.</p> : null}
@@ -192,6 +336,25 @@ export default async function AdminReportDetailPage({
             ))}
           </div>
         </article>
+      </section>
+
+      <section className="panel-section">
+        <h2>수정 이력</h2>
+        <div className="timeline">
+          {report.revisions.map((revision) => (
+            <div className="timeline-entry" key={revision.id}>
+              <span>{formatDateTime(revision.createdAt)}</span>
+              <strong>{labelOf(reportFieldLabels, revision.fieldName)}</strong>
+              <p>
+                {formatRevisionValue(revision.oldValue)} → {formatRevisionValue(revision.newValue)}
+              </p>
+              <small>
+                {labelOf(actorLabels, revision.editorType)} · {revision.reason ?? "-"}
+              </small>
+            </div>
+          ))}
+          {report.revisions.length === 0 ? <p className="empty-text">수정 이력이 없습니다.</p> : null}
+        </div>
       </section>
 
       <section className="panel-section">

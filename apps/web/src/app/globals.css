@@ -34,6 +34,7 @@ body {
 
 button,
 input,
+select,
 textarea {
   font: inherit;
 }
@@ -457,6 +458,78 @@ h2 {
   margin-bottom: 16px;
 }
 
+.admin-form {
+  display: grid;
+  gap: 14px;
+}
+
+.compact-form {
+  gap: 10px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.form-field {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+  color: var(--color-text);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.form-field input,
+.form-field select,
+.form-field textarea {
+  width: 100%;
+  min-height: 42px;
+  padding: 0 12px;
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--color-text);
+  outline: 0;
+}
+
+.form-field textarea {
+  min-height: 112px;
+  padding: 12px;
+  resize: vertical;
+  line-height: 1.55;
+}
+
+.form-field input:focus,
+.form-field select:focus,
+.form-field textarea:focus {
+  border-color: #7ac7e8;
+  box-shadow: 0 0 0 3px rgba(30, 155, 215, 0.12);
+}
+
+.textarea-field {
+  grid-column: 1 / -1;
+}
+
+.action-row,
+.admin-action-stack {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.action-row {
+  justify-content: flex-end;
+}
+
+.admin-action-stack {
+  align-items: stretch;
+  flex-direction: column;
+  gap: 18px;
+}
+
 .section-header,
 .detail-header,
 .back-row,
@@ -867,7 +940,8 @@ h2 {
   }
 
   .detail-grid,
-  .bid-grid {
+  .bid-grid,
+  .form-grid {
     grid-template-columns: 1fr;
   }
 

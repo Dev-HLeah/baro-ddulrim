@@ -73,6 +73,15 @@ export type ReportDetail = ReportListItem & {
     needsReview: boolean;
     createdAt: string | null;
   }>;
+  revisions: Array<{
+    id: string;
+    editorType: string;
+    fieldName: string;
+    oldValue: string | number | boolean | null;
+    newValue: string | number | boolean | null;
+    reason: string | null;
+    createdAt: string | null;
+  }>;
   statusHistory: Array<{
     id: string;
     fromStatus: string | null;
