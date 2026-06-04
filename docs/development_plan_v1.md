@@ -174,6 +174,30 @@ Supabase는 Seoul 리전을 제공하므로 한국 사용자 대상 서비스에
 
 지도 Provider 상세 설계는 `docs/map_provider_design_v1.md`를 기준으로 한다.
 
+### 환경변수 관리
+
+환경변수는 앱별로 분리한다. 루트 `.env` 하나에 모든 값을 몰아넣지 않는다.
+
+권장 앱별 env 구조:
+
+- `apps/web/.env.example`
+- `apps/web/.env.local`
+- `apps/server/.env.example`
+- `apps/server/.env`
+- `apps/mobile/.env.example`
+- `apps/mobile/.env`
+
+원칙:
+
+- 실제 `.env`, `.env.local`, `.env.production` 파일은 git에 커밋하지 않는다.
+- 각 앱은 자기 실행에 필요한 환경변수만 가진다.
+- 브라우저에 노출 가능한 값만 `NEXT_PUBLIC_` 접두사로 웹 env에 둔다.
+- Supabase service role key, DB URL, AI API key, Kakao REST API key 같은 비밀값은 백엔드 env에만 둔다.
+- Flutter 앱 env에는 public config만 둔다. 모바일 앱에 service role key나 AI API key를 넣지 않는다.
+- 배포 환경에서도 Vercel, Railway, Flutter 빌드 설정이 각각 자기 앱 env를 관리한다.
+
+앱별 env 상세 전략은 `docs/env_strategy_v1.md`를 기준으로 한다.
+
 ### 협업 및 커밋 규칙
 
 - 작업 단위별로 커밋한다.

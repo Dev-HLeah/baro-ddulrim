@@ -142,9 +142,10 @@ export interface ReverseGeocodeResult {
 
 권장 환경변수:
 
-- `KAKAO_REST_API_KEY`
-- `NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY`
-- `MAP_PROVIDER=kakao`
+- `apps/server/.env`: `KAKAO_REST_API_KEY`
+- `apps/server/.env`: `MAP_PROVIDER=kakao`
+- `apps/web/.env.local`: `NEXT_PUBLIC_KAKAO_JAVASCRIPT_KEY`
+- `apps/mobile/.env`: `KAKAO_JAVASCRIPT_KEY` 또는 Flutter 지도 SDK용 public key
 
 REST API 키는 프론트에 노출하지 않는다. JavaScript SDK 키만 브라우저에 노출한다.
 
