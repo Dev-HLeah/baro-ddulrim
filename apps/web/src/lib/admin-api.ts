@@ -1,0 +1,170 @@
+export type DashboardSummary = {
+  totalReports: number;
+  adminReviewCount: number;
+  biddingCount: number;
+  assignedCount: number;
+  resolvedCount: number;
+  urgentCount: number;
+  activeContractors: number;
+  mapMarkerCount: number;
+  statusCounts: Record<string, number>;
+  channelCounts: Record<string, number>;
+  averageMinutes: {
+    approval: number | null;
+    assignment: number | null;
+    resolution: number | null;
+  };
+};
+
+export type ReportListItem = {
+  id: string;
+  reportNo: string;
+  customerPhone: string;
+  channel: string;
+  status: string;
+  issueType: string | null;
+  urgency: string;
+  summary: string | null;
+  description: string | null;
+  addressText: string | null;
+  roadAddressText: string | null;
+  placeName: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  bidCount: number;
+  messageCount: number;
+  attachmentCount: number;
+  workUpdateCount: number;
+  assignedCompanyName: string | null;
+  minEstimatedPrice: number | null;
+  createdAt: string | null;
+  adminApprovedAt: string | null;
+  assignedAt: string | null;
+  resolvedAt: string | null;
+  updatedAt: string | null;
+};
+
+export type ReportDetail = ReportListItem & {
+  verificationCode: string;
+  messages: Array<{
+    id: string;
+    senderType: string;
+    messageType: string;
+    content: string;
+    createdAt: string | null;
+  }>;
+  attachments: Array<{
+    id: string;
+    fileType: string;
+    fileUrl: string;
+    originalName: string | null;
+    createdAt: string | null;
+  }>;
+  aiAnalyses: Array<{
+    id: string;
+    provider: string;
+    model: string;
+    summary: string | null;
+    issueType: string | null;
+    urgency: string | null;
+    missingFields: string[];
+    vendorDescription: string | null;
+    confidence: number | null;
+    needsReview: boolean;
+    createdAt: string | null;
+  }>;
+  statusHistory: Array<{
+    id: string;
+    fromStatus: string | null;
+    toStatus: string;
+    actorType: string;
+    reason: string | null;
+    createdAt: string | null;
+  }>;
+  locationCandidates: Array<{
+    id: string;
+    provider: string;
+    title: string;
+    addressText: string | null;
+    roadAddressText: string | null;
+    placeName: string | null;
+    category: string | null;
+    latitude: number | null;
+    longitude: number | null;
+    confidence: number | null;
+    createdAt: string | null;
+  }>;
+  bids: Array<{
+    id: string;
+    contractorCompanyId: string;
+    contractorCompanyName: string;
+    estimatedPrice: number | null;
+    availableTime: string | null;
+    canWork: boolean;
+    workNote: string | null;
+    extraCostPolicy: string | null;
+    status: string;
+    submittedAt: string | null;
+  }>;
+  assignment: {
+    id: string;
+    contractorCompanyName: string;
+    selectionReason: string | null;
+    customerMessageRendered: string | null;
+    assignedAt: string | null;
+  } | null;
+  workUpdates: Array<{
+    id: string;
+    contractorCompanyName: string;
+    status: string;
+    note: string | null;
+    finalPrice: number | null;
+    createdAt: string | null;
+  }>;
+};
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
+
+async function fetchJson<T>(path: string, fallback: T): Promise<T> {
+  try {
+    const response = await fetch(`${apiBaseUrl}${path}`, {
+      cache: "no-store"
+    });
+
+    if (!response.ok) {
+      return fallback;
+    }
+
+    return (await response.json()) as T;
+  } catch {
+    return fallback;
+  }
+}
+
+export function getDashboardSummary() {
+  return fetchJson<DashboardSummary>("/dashboard/summary", {
+    totalReports: 0,
+    adminReviewCount: 0,
+    biddingCount: 0,
+    assignedCount: 0,
+    resolvedCount: 0,
+    urgentCount: 0,
+    activeContractors: 0,
+    mapMarkerCount: 0,
+    statusCounts: {},
+    channelCounts: {},
+    averageMinutes: {
+      approval: null,
+      assignment: null,
+      resolution: null
+    }
+  });
+}
+
+export function getReports() {
+  return fetchJson<ReportListItem[]>("/reports", []);
+}
+
+export function getReport(id: string) {
+  return fetchJson<ReportDetail | null>(`/reports/${encodeURIComponent(id)}`, null);
+}

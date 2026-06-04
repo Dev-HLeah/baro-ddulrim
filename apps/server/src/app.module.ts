@@ -2,7 +2,9 @@ import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
+import { DashboardModule } from "./dashboard/dashboard.module";
 import { PrismaModule } from "./prisma/prisma.module";
+import { ReportsModule } from "./reports/reports.module";
 
 @Module({
   imports: [
@@ -10,7 +12,9 @@ import { PrismaModule } from "./prisma/prisma.module";
       envFilePath: [".env"],
       isGlobal: true
     }),
-    PrismaModule
+    PrismaModule,
+    DashboardModule,
+    ReportsModule
   ],
   controllers: [AppController],
   providers: [AppService]
