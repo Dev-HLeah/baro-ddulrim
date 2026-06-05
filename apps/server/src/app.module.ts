@@ -9,6 +9,7 @@ import { MapsModule } from "./maps/maps.module";
 import { MessageTemplatesModule } from "./message-templates/message-templates.module";
 import { PrismaModule } from "./prisma/prisma.module";
 import { ReportsModule } from "./reports/reports.module";
+import { SettingsModule } from "./settings/settings.module";
 
 @Module({
   imports: [
@@ -22,7 +23,8 @@ import { ReportsModule } from "./reports/reports.module";
     CustomersModule,
     MapsModule,
     MessageTemplatesModule,
-    ReportsModule
+    ReportsModule,
+    SettingsModule
   ],
   controllers: [AppController],
   providers: [AppService]

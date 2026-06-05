@@ -176,6 +176,13 @@ export type AdminContractorCompany = {
   updatedAt: string | null;
 };
 
+export type AppSetting = {
+  id: string;
+  key: string;
+  value: unknown;
+  updatedAt: string | null;
+};
+
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
 
 async function fetchJson<T>(path: string, fallback: T): Promise<T> {
@@ -228,4 +235,8 @@ export function getMessageTemplates() {
 
 export function getAdminContractorCompanies() {
   return fetchJson<AdminContractorCompany[]>("/contractors/admin/companies", []);
+}
+
+export function getAppSettings() {
+  return fetchJson<AppSetting[]>("/settings", []);
 }

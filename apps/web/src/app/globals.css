@@ -1054,6 +1054,33 @@ h2 {
   line-height: 1.6;
 }
 
+.settings-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.settings-card {
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+  padding: 20px;
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04);
+}
+
+.settings-card h2 {
+  margin-bottom: 10px;
+}
+
+.settings-card p:not(.eyebrow) {
+  margin: 0;
+  color: var(--color-muted);
+  line-height: 1.6;
+}
+
 .opportunity-grid,
 .assignment-grid {
   display: grid;
@@ -1365,6 +1392,7 @@ h2 {
   .bid-grid,
   .contractor-company-list,
   .contractor-admin-grid,
+  .settings-grid,
   .opportunity-grid,
   .assignment-grid,
   .template-grid,
