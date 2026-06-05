@@ -1182,6 +1182,10 @@ h2 {
   overflow: hidden;
 }
 
+.admin-map-surface {
+  min-height: calc(100vh - 170px);
+}
+
 .map-toolbar {
   display: flex;
   align-items: center;
@@ -1199,6 +1203,113 @@ h2 {
   min-height: 520px;
   color: var(--color-primary-dark);
   background: #eef4f8;
+}
+
+.report-map-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  min-height: 620px;
+}
+
+.report-map-canvas {
+  position: relative;
+  min-height: 620px;
+  overflow: hidden;
+  background:
+    linear-gradient(90deg, rgba(14, 116, 144, 0.06) 1px, transparent 1px),
+    linear-gradient(rgba(14, 116, 144, 0.06) 1px, transparent 1px),
+    #eef8fc;
+  background-size: 54px 54px;
+}
+
+.kakao-map-container,
+.fallback-map-grid {
+  position: absolute;
+  inset: 0;
+}
+
+.fallback-map-grid::before,
+.fallback-map-grid::after {
+  position: absolute;
+  content: "";
+  border-radius: 999px;
+  background: rgba(30, 155, 215, 0.12);
+}
+
+.fallback-map-grid::before {
+  width: 420px;
+  height: 160px;
+  left: 11%;
+  top: 22%;
+  transform: rotate(-18deg);
+}
+
+.fallback-map-grid::after {
+  width: 520px;
+  height: 190px;
+  right: 8%;
+  bottom: 18%;
+  transform: rotate(14deg);
+}
+
+.map-marker-dot {
+  position: absolute;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  transform: translate(-50%, -50%);
+  border: 3px solid #ffffff;
+  border-radius: 999px;
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.16);
+  color: #ffffff;
+}
+
+.map-marker-dot.normal {
+  background: var(--color-accent);
+}
+
+.map-marker-dot.urgent {
+  background: #d97706;
+}
+
+.map-marker-dot.emergency {
+  background: #dc2626;
+}
+
+.map-marker-dot.resolved {
+  background: var(--color-primary-dark);
+}
+
+.map-marker-dot.active {
+  outline: 4px solid rgba(30, 155, 215, 0.24);
+}
+
+.map-empty-state {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 10px;
+  color: var(--color-primary-dark);
+}
+
+.report-map-panel {
+  display: grid;
+  align-content: start;
+  gap: 16px;
+  min-width: 0;
+  padding: 24px;
+  border-left: 1px solid var(--color-line);
+  background: #ffffff;
+}
+
+.report-map-panel h2 {
+  margin-bottom: 0;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
 }
 
 @media (max-width: 960px) {
@@ -1252,10 +1363,20 @@ h2 {
   .report-item,
   .photo-uploader-header,
   .map-toolbar,
+  .report-map-layout,
   .detail-header,
   .section-header {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .report-map-layout {
+    display: flex;
+  }
+
+  .report-map-panel {
+    border-left: 0;
+    border-top: 1px solid var(--color-line);
   }
 
   .report-meta {
