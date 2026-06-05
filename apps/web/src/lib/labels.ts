@@ -61,6 +61,15 @@ export const bidStatusLabels: Record<string, string> = {
   REJECTED: "미선정"
 };
 
+export const contractorStatusLabels: Record<string, string> = {
+  REVIEWING: "검토중",
+  APPROVED: "승인",
+  ACTIVE: "활성",
+  INACTIVE: "비활성",
+  RESTRICTED: "활동 제한",
+  REJECTED: "반려"
+};
+
 export const reportFieldLabels: Record<string, string> = {
   summary: "요약",
   description: "상세 내용",

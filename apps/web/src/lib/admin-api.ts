@@ -150,6 +150,32 @@ export type MessageTemplate = {
   }>;
 };
 
+export type AdminContractorCompany = {
+  id: string;
+  companyName: string;
+  representativeName: string;
+  businessNumber: string;
+  businessLicenseFileUrl: string | null;
+  companyPhotoUrl: string | null;
+  managerName: string;
+  phone: string;
+  email: string;
+  status: string;
+  statusReason: string | null;
+  serviceRegions: string[];
+  serviceRadiusKm: number | null;
+  description: string | null;
+  address: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  bidCount: number;
+  assignmentCount: number;
+  workUpdateCount: number;
+  approvedAt: string | null;
+  createdAt: string | null;
+  updatedAt: string | null;
+};
+
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
 
 async function fetchJson<T>(path: string, fallback: T): Promise<T> {
@@ -198,4 +224,8 @@ export function getReport(id: string) {
 
 export function getMessageTemplates() {
   return fetchJson<MessageTemplate[]>("/message-templates", []);
+}
+
+export function getAdminContractorCompanies() {
+  return fetchJson<AdminContractorCompany[]>("/contractors/admin/companies", []);
 }

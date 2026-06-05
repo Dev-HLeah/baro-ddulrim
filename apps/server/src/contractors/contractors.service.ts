@@ -1,15 +1,34 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import { createClient } from "@supabase/supabase-js";
+import { randomUUID } from "node:crypto";
+import { extname } from "node:path";
 import { toIso, toNumber } from "../common/format";
 import {
   ActorType,
   BidStatus,
   ContractorStatus,
+  Prisma,
   ReportStatus,
   WorkStatus
 } from "../generated/prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
+import { RegisterContractorDto } from "./dto/register-contractor.dto";
 import { SubmitBidDto } from "./dto/submit-bid.dto";
 import { SubmitWorkUpdateDto } from "./dto/submit-work-update.dto";
+import { UpdateContractorStatusDto } from "./dto/update-contractor-status.dto";
+
+type ContractorUploadFile = {
+  buffer: Buffer;
+  mimetype: string;
+  originalname: string;
+  size: number;
+};
+
+type ContractorUploadFiles = {
+  businessLicense?: ContractorUploadFile[];
+  companyPhoto?: ContractorUploadFile[];
+};
 
 const usableContractorStatuses: ContractorStatus[] = [
   ContractorStatus.APPROVED,
@@ -30,7 +49,123 @@ const reportStatusByWorkStatus: Record<WorkStatus, ReportStatus> = {
 
 @Injectable()
 export class ContractorsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly config: ConfigService
+  ) {}
+
+  async registerCompany(dto: RegisterContractorDto, files: ContractorUploadFiles) {
+    const email = this.requireCleanString(dto.email, "이메일을 입력해 주세요.").toLowerCase();
+    const name = this.requireCleanString(dto.name, "담당자 이름을 입력해 주세요.");
+    const phone = this.requireCleanString(dto.phone, "연락처를 입력해 주세요.");
+    const companyName = this.requireCleanString(dto.companyName, "업체명을 입력해 주세요.");
+    const representativeName = this.requireCleanString(
+      dto.representativeName,
+      "대표자 이름을 입력해 주세요."
+    );
+    const businessNumber = this.requireCleanString(
+      dto.businessNumber,
+      "사업자 번호를 입력해 주세요."
+    );
+
+    const existingCompany = await this.prisma.contractorCompany.findUnique({
+      where: { businessNumber }
+    });
+
+    if (existingCompany) {
+      throw new ConflictException("이미 등록된 사업자 번호입니다.");
+    }
+
+    const businessLicenseFileUrl = await this.uploadContractorFile(
+      businessNumber,
+      "business-license",
+      files.businessLicense?.[0] ?? null
+    );
+    const companyPhotoUrl = await this.uploadContractorFile(
+      businessNumber,
+      "company-photo",
+      files.companyPhoto?.[0] ?? null
+    );
+
+    const company = await this.prisma.$transaction(async (tx) => {
+      const account = await tx.contractorAccount.upsert({
+        where: { email },
+        update: {
+          name,
+          phone
+        },
+        create: {
+          email,
+          name,
+          phone
+        }
+      });
+
+      const accountCompany = await tx.contractorCompany.findUnique({
+        where: { accountId: account.id }
+      });
+
+      if (accountCompany) {
+        throw new ConflictException("이미 업체 등록이 진행 중인 계정입니다.");
+      }
+
+      return tx.contractorCompany.create({
+        data: {
+          accountId: account.id,
+          companyName,
+          representativeName,
+          businessNumber,
+          businessLicenseFileUrl,
+          companyPhotoUrl,
+          address: this.cleanString(dto.address),
+          latitude: dto.latitude ?? null,
+          longitude: dto.longitude ?? null,
+          serviceRegions: this.parseServiceRegions(dto.serviceRegions),
+          serviceRadiusKm: dto.serviceRadiusKm ?? null,
+          description: this.cleanString(dto.description),
+          status: ContractorStatus.REVIEWING,
+          statusReason: "업체 등록 신청"
+        },
+        include: this.companyInclude()
+      });
+    });
+
+    return this.serializeCompany(company);
+  }
+
+  async findCompaniesForAdmin() {
+    const companies = await this.prisma.contractorCompany.findMany({
+      orderBy: [{ status: "asc" }, { createdAt: "desc" }],
+      include: this.companyInclude()
+    });
+
+    return companies.map((company) => this.serializeCompany(company));
+  }
+
+  async updateCompanyStatus(companyId: string, dto: UpdateContractorStatusDto) {
+    const current = await this.prisma.contractorCompany.findUnique({
+      where: { id: companyId }
+    });
+
+    if (!current) {
+      throw new NotFoundException("업체를 찾을 수 없습니다.");
+    }
+
+    const company = await this.prisma.contractorCompany.update({
+      where: { id: companyId },
+      data: {
+        status: dto.status,
+        statusReason: this.cleanString(dto.statusReason),
+        approvedAt:
+          dto.status === ContractorStatus.APPROVED || dto.status === ContractorStatus.ACTIVE
+            ? new Date()
+            : undefined
+      },
+      include: this.companyInclude()
+    });
+
+    return this.serializeCompany(company);
+  }
 
   async findCompanies() {
     const companies = await this.prisma.contractorCompany.findMany({
@@ -351,6 +486,169 @@ export class ContractorsService {
     }
 
     return company;
+  }
+
+  private companyInclude(): Prisma.ContractorCompanyInclude {
+    return {
+      account: true,
+      _count: {
+        select: {
+          bids: true,
+          assignments: true,
+          workUpdates: true
+        }
+      }
+    };
+  }
+
+  private serializeCompany(company: {
+    id: string;
+    companyName: string;
+    representativeName: string;
+    businessNumber: string;
+    businessLicenseFileUrl: string | null;
+    companyPhotoUrl: string | null;
+    address: string | null;
+    latitude: Parameters<typeof toNumber>[0];
+    longitude: Parameters<typeof toNumber>[0];
+    serviceRegions: string[];
+    serviceRadiusKm: number | null;
+    description: string | null;
+    status: ContractorStatus;
+    statusReason: string | null;
+    approvedAt: Date | null;
+    createdAt: Date;
+    updatedAt: Date;
+    account: {
+      email: string;
+      name: string;
+      phone: string;
+    };
+    _count: {
+      bids: number;
+      assignments: number;
+      workUpdates: number;
+    };
+  }) {
+    return {
+      id: company.id,
+      companyName: company.companyName,
+      representativeName: company.representativeName,
+      businessNumber: company.businessNumber,
+      businessLicenseFileUrl: company.businessLicenseFileUrl,
+      companyPhotoUrl: company.companyPhotoUrl,
+      managerName: company.account.name,
+      phone: company.account.phone,
+      email: company.account.email,
+      status: company.status,
+      statusReason: company.statusReason,
+      serviceRegions: company.serviceRegions,
+      serviceRadiusKm: company.serviceRadiusKm,
+      description: company.description,
+      address: company.address,
+      latitude: toNumber(company.latitude),
+      longitude: toNumber(company.longitude),
+      bidCount: company._count.bids,
+      assignmentCount: company._count.assignments,
+      workUpdateCount: company._count.workUpdates,
+      approvedAt: toIso(company.approvedAt),
+      createdAt: toIso(company.createdAt),
+      updatedAt: toIso(company.updatedAt)
+    };
+  }
+
+  private async uploadContractorFile(
+    businessNumber: string,
+    kind: "business-license" | "company-photo",
+    file: ContractorUploadFile | null
+  ) {
+    if (!file || file.size <= 0) {
+      return null;
+    }
+
+    const supabaseUrl = this.config.get<string>("SUPABASE_URL");
+    const serviceRoleKey = this.config.get<string>("SUPABASE_SERVICE_ROLE_KEY");
+    const bucketName = this.config.get<string>("SUPABASE_CONTRACTOR_DOCUMENTS_BUCKET");
+
+    if (!supabaseUrl || !serviceRoleKey || !bucketName) {
+      throw new BadRequestException("업체 문서 저장 환경변수가 설정되지 않았습니다.");
+    }
+
+    if (
+      kind === "company-photo" &&
+      !file.mimetype.startsWith("image/")
+    ) {
+      throw new BadRequestException("업체 사진은 이미지 파일만 등록할 수 있습니다.");
+    }
+
+    if (
+      kind === "business-license" &&
+      !file.mimetype.startsWith("image/") &&
+      file.mimetype !== "application/pdf"
+    ) {
+      throw new BadRequestException("사업자등록증은 이미지 또는 PDF 파일만 등록할 수 있습니다.");
+    }
+
+    const supabase = createClient(supabaseUrl, serviceRoleKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    });
+    const safeBusinessNumber = businessNumber.replace(/[^a-zA-Z0-9-]/g, "");
+    const storagePath = `${safeBusinessNumber}/${kind}-${randomUUID()}${this.safeExtension(file)}`;
+    const { error } = await supabase.storage.from(bucketName).upload(storagePath, file.buffer, {
+      contentType: file.mimetype,
+      upsert: false
+    });
+
+    if (error) {
+      throw new BadRequestException(`업체 문서 업로드에 실패했습니다: ${error.message}`);
+    }
+
+    const { data } = supabase.storage.from(bucketName).getPublicUrl(storagePath);
+    return data.publicUrl;
+  }
+
+  private safeExtension(file: ContractorUploadFile) {
+    const extension = extname(file.originalname).toLowerCase();
+
+    if (extension && /^[a-z0-9.]+$/.test(extension)) {
+      return extension;
+    }
+
+    if (file.mimetype === "application/pdf") {
+      return ".pdf";
+    }
+
+    if (file.mimetype === "image/png") {
+      return ".png";
+    }
+
+    if (file.mimetype === "image/webp") {
+      return ".webp";
+    }
+
+    return ".jpg";
+  }
+
+  private parseServiceRegions(value: string | null | undefined) {
+    return (
+      this.cleanString(value)
+        ?.split(/[,\n]/)
+        .map((region) => region.trim())
+        .filter(Boolean) ?? []
+    );
+  }
+
+  private requireCleanString(value: string | null | undefined, message: string) {
+    const cleaned = this.cleanString(value);
+
+    if (!cleaned) {
+      throw new BadRequestException(message);
+    }
+
+    return cleaned;
   }
 
   private serializeBid(bid: {

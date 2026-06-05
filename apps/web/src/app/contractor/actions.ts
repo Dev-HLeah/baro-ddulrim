@@ -52,6 +52,51 @@ export async function submitContractorBidAction(companyId: string, reportId: str
   redirect(`/contractor?companyId=${encodeURIComponent(companyId)}`);
 }
 
+function appendText(target: FormData, key: string, value: string | null) {
+  if (value) {
+    target.append(key, value);
+  }
+}
+
+function appendFile(target: FormData, key: string, value: FormDataEntryValue | null) {
+  if (value instanceof File && value.size > 0) {
+    target.append(key, value, value.name);
+  }
+}
+
+export async function registerContractorAction(formData: FormData) {
+  const apiFormData = new FormData();
+
+  [
+    "email",
+    "name",
+    "phone",
+    "companyName",
+    "representativeName",
+    "businessNumber",
+    "address",
+    "serviceRegions",
+    "serviceRadiusKm",
+    "description"
+  ].forEach((key) => appendText(apiFormData, key, textValue(formData, key)));
+  appendFile(apiFormData, "businessLicense", formData.get("businessLicense"));
+  appendFile(apiFormData, "companyPhoto", formData.get("companyPhoto"));
+
+  const response = await fetch(`${apiBaseUrl}/contractors/register`, {
+    method: "POST",
+    body: apiFormData
+  });
+
+  if (!response.ok) {
+    const message = await response.text();
+    throw new Error(message || "업체 등록 신청을 처리하지 못했습니다.");
+  }
+
+  revalidatePath("/contractor");
+  revalidatePath("/admin/contractors");
+  redirect("/contractor?registered=1");
+}
+
 export async function submitWorkUpdateAction(companyId: string, assignmentId: string, formData: FormData) {
   const response = await fetch(
     `${apiBaseUrl}/contractors/${encodeURIComponent(companyId)}/assignments/${encodeURIComponent(

@@ -15,7 +15,7 @@ import {
   statusLabels,
   urgencyLabels
 } from "@/lib/labels";
-import { submitContractorBidAction, submitWorkUpdateAction } from "./actions";
+import { registerContractorAction, submitContractorBidAction, submitWorkUpdateAction } from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -55,7 +55,7 @@ function toDatetimeLocal(value: string | null | undefined) {
 export default async function ContractorPage({
   searchParams
 }: {
-  searchParams: Promise<{ companyId?: string }>;
+  searchParams: Promise<{ companyId?: string; registered?: string }>;
 }) {
   const params = await searchParams;
   const companies = await getContractorCompanies();
@@ -79,6 +79,80 @@ export default async function ContractorPage({
         <p className="eyebrow">업체</p>
         <h1>입찰 작업대</h1>
       </header>
+
+      {params.registered === "1" ? (
+        <section className="panel-section">
+          <p className="empty-text">업체 등록 신청이 접수되었습니다. 관리자가 확인 후 승인합니다.</p>
+        </section>
+      ) : null}
+
+      <section className="panel-section">
+        <div className="section-header">
+          <div>
+            <p className="eyebrow">신규 업체</p>
+            <h2>업체 등록 신청</h2>
+          </div>
+        </div>
+        <form action={registerContractorAction} className="admin-form">
+          <div className="form-grid">
+            <label className="form-field">
+              <span>담당자 이메일</span>
+              <input name="email" placeholder="partner@example.com" required type="email" />
+            </label>
+            <label className="form-field">
+              <span>담당자 이름</span>
+              <input name="name" placeholder="홍길동" required />
+            </label>
+            <label className="form-field">
+              <span>연락처</span>
+              <input name="phone" placeholder="010-0000-0000" required type="tel" />
+            </label>
+            <label className="form-field">
+              <span>업체명</span>
+              <input name="companyName" placeholder="바로배관케어" required />
+            </label>
+            <label className="form-field">
+              <span>대표자명</span>
+              <input name="representativeName" placeholder="김대표" required />
+            </label>
+            <label className="form-field">
+              <span>사업자 번호</span>
+              <input name="businessNumber" placeholder="000-00-00000" required />
+            </label>
+            <label className="form-field">
+              <span>주소</span>
+              <input name="address" placeholder="서울시 강남구" />
+            </label>
+            <label className="form-field">
+              <span>활동 반경(km)</span>
+              <input inputMode="numeric" name="serviceRadiusKm" placeholder="20" />
+            </label>
+          </div>
+          <label className="form-field">
+            <span>활동 지역</span>
+            <input name="serviceRegions" placeholder="서울, 경기 남부" required />
+          </label>
+          <label className="form-field textarea-field">
+            <span>업체 소개</span>
+            <textarea name="description" placeholder="보유 장비, 대응 가능 작업, 출동 가능 지역" />
+          </label>
+          <div className="form-grid">
+            <label className="form-field">
+              <span>사업자등록증</span>
+              <input accept="image/*,application/pdf" name="businessLicense" type="file" />
+            </label>
+            <label className="form-field">
+              <span>업체 사진</span>
+              <input accept="image/*" name="companyPhoto" type="file" />
+            </label>
+          </div>
+          <div className="action-row">
+            <button className="primary-button" type="submit">
+              등록 신청
+            </button>
+          </div>
+        </form>
+      </section>
 
       {companies.length > 0 ? (
         <section className="contractor-company-list" aria-label="업체 선택">
