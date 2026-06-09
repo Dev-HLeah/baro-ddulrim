@@ -3,15 +3,16 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
+const apiBaseUrl =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
 
 async function mutate(path: string, init: RequestInit) {
   const response = await fetch(`${apiBaseUrl}${path}`, {
     ...init,
     headers: {
       "Content-Type": "application/json",
-      ...(init.headers ?? {})
-    }
+      ...(init.headers ?? {}),
+    },
   });
 
   if (!response.ok) {
@@ -55,28 +56,36 @@ export async function updateReportAction(reportNo: string, formData: FormData) {
       placeName: textValue(formData, "placeName"),
       latitude: numberValue(formData, "latitude"),
       longitude: numberValue(formData, "longitude"),
-      reason: textValue(formData, "reason")
-    })
+      reason: textValue(formData, "reason"),
+    }),
   });
 
   revalidatePath("/admin");
   revalidatePath("/admin/reports");
   revalidatePath(`/admin/reports/${reportNo}`);
-  redirect(`/admin/reports/${reportNo}`);
+  revalidatePath(`/admin/reports/${reportNo}/review`);
+  revalidatePath(`/admin/reports/${reportNo}/history`);
+  redirect(`/admin/reports/${reportNo}/review`);
 }
 
-export async function approveReportAction(reportNo: string, formData: FormData) {
+export async function approveReportAction(
+  reportNo: string,
+  formData: FormData,
+) {
   await mutate(`/reports/${encodeURIComponent(reportNo)}/approve`, {
     method: "POST",
     body: JSON.stringify({
-      reason: textValue(formData, "reason")
-    })
+      reason: textValue(formData, "reason"),
+    }),
   });
 
   revalidatePath("/admin");
   revalidatePath("/admin/reports");
   revalidatePath(`/admin/reports/${reportNo}`);
-  redirect(`/admin/reports/${reportNo}`);
+  revalidatePath(`/admin/reports/${reportNo}/review`);
+  revalidatePath(`/admin/reports/${reportNo}/bids`);
+  revalidatePath(`/admin/reports/${reportNo}/history`);
+  redirect(`/admin/reports/${reportNo}/review`);
 }
 
 export async function assignBidAction(reportNo: string, formData: FormData) {
@@ -85,12 +94,14 @@ export async function assignBidAction(reportNo: string, formData: FormData) {
     body: JSON.stringify({
       bidId: textValue(formData, "bidId"),
       selectionReason: textValue(formData, "selectionReason"),
-      templateId: textValue(formData, "templateId")
-    })
+      templateId: textValue(formData, "templateId"),
+    }),
   });
 
   revalidatePath("/admin");
   revalidatePath("/admin/reports");
   revalidatePath(`/admin/reports/${reportNo}`);
-  redirect(`/admin/reports/${reportNo}`);
+  revalidatePath(`/admin/reports/${reportNo}/bids`);
+  revalidatePath(`/admin/reports/${reportNo}/history`);
+  redirect(`/admin/reports/${reportNo}/bids`);
 }

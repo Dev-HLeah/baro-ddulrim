@@ -1,20 +1,23 @@
 import { notFound } from "next/navigation";
 import {
+  AdminReportBids,
   AdminReportHeader,
-  AdminReportOverview,
 } from "@/components/admin-report-detail";
 import { AdminShell } from "@/components/admin-shell";
-import { getReport } from "@/lib/admin-api";
+import { getMessageTemplates, getReport } from "@/lib/admin-api";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminReportDetailPage({
+export default async function AdminReportBidsPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const report = await getReport(id);
+  const [report, templates] = await Promise.all([
+    getReport(id),
+    getMessageTemplates(),
+  ]);
 
   if (!report) {
     notFound();
@@ -22,8 +25,8 @@ export default async function AdminReportDetailPage({
 
   return (
     <AdminShell>
-      <AdminReportHeader active="overview" report={report} />
-      <AdminReportOverview report={report} />
+      <AdminReportHeader active="bids" report={report} />
+      <AdminReportBids report={report} templates={templates} />
     </AdminShell>
   );
 }

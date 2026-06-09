@@ -3,7 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
+const apiBaseUrl =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
 
 function textValue(formData: FormData, key: string) {
   const value = formData.get(key);
@@ -21,8 +22,8 @@ async function mutate(path: string, init: RequestInit) {
     ...init,
     headers: {
       "Content-Type": "application/json",
-      ...(init.headers ?? {})
-    }
+      ...(init.headers ?? {}),
+    },
   });
 
   if (!response.ok) {
@@ -36,28 +37,33 @@ function templatePayload(formData: FormData) {
     name: textValue(formData, "name"),
     channel: textValue(formData, "channel"),
     content: textValue(formData, "content"),
-    isActive: formData.get("isActive") === "on"
+    isActive: formData.get("isActive") === "on",
   };
 }
 
 export async function createMessageTemplateAction(formData: FormData) {
   await mutate("/message-templates", {
     method: "POST",
-    body: JSON.stringify(templatePayload(formData))
+    body: JSON.stringify(templatePayload(formData)),
   });
 
   revalidatePath("/admin/templates");
+  revalidatePath("/admin/templates/new");
   revalidatePath("/admin/reports");
   redirect("/admin/templates");
 }
 
-export async function updateMessageTemplateAction(templateId: string, formData: FormData) {
+export async function updateMessageTemplateAction(
+  templateId: string,
+  formData: FormData,
+) {
   await mutate(`/message-templates/${encodeURIComponent(templateId)}`, {
     method: "PATCH",
-    body: JSON.stringify(templatePayload(formData))
+    body: JSON.stringify(templatePayload(formData)),
   });
 
   revalidatePath("/admin/templates");
+  revalidatePath(`/admin/templates/${templateId}`);
   revalidatePath("/admin/reports");
-  redirect("/admin/templates");
+  redirect(`/admin/templates/${templateId}`);
 }

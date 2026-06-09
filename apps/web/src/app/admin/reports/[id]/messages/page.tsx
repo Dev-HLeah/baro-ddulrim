@@ -1,14 +1,14 @@
 import { notFound } from "next/navigation";
 import {
   AdminReportHeader,
-  AdminReportOverview,
+  AdminReportMessages,
 } from "@/components/admin-report-detail";
 import { AdminShell } from "@/components/admin-shell";
 import { getReport } from "@/lib/admin-api";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminReportDetailPage({
+export default async function AdminReportMessagesPage({
   params,
 }: {
   params: Promise<{ id: string }>;
@@ -22,8 +22,8 @@ export default async function AdminReportDetailPage({
 
   return (
     <AdminShell>
-      <AdminReportHeader active="overview" report={report} />
-      <AdminReportOverview report={report} />
+      <AdminReportHeader active="messages" report={report} />
+      <AdminReportMessages report={report} />
     </AdminShell>
   );
 }

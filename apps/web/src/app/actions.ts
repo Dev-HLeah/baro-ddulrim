@@ -3,7 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
+const apiBaseUrl =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
 
 function textValue(formData: FormData, key: string) {
   const value = formData.get(key);
@@ -39,7 +40,7 @@ export async function createCustomerReportAction(formData: FormData) {
 
   const response = await fetch(`${apiBaseUrl}/reports`, {
     method: "POST",
-    body: apiFormData
+    body: apiFormData,
   });
 
   if (!response.ok) {
@@ -52,12 +53,13 @@ export async function createCustomerReportAction(formData: FormData) {
     verificationCode: string;
   };
 
-  revalidatePath("/");
+  revalidatePath("/report/new");
+  revalidatePath("/report/lookup");
   revalidatePath("/admin");
   revalidatePath("/admin/reports");
   redirect(
-    `/?reportNo=${encodeURIComponent(report.reportNo)}&verificationCode=${encodeURIComponent(
-      report.verificationCode
-    )}`
+    `/report/${encodeURIComponent(report.reportNo)}?verificationCode=${encodeURIComponent(
+      report.verificationCode,
+    )}`,
   );
 }

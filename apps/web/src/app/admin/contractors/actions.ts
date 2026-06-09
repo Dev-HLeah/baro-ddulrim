@@ -3,7 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
+const apiBaseUrl =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
 
 function textValue(formData: FormData, key: string) {
   const value = formData.get(key);
@@ -16,19 +17,22 @@ function textValue(formData: FormData, key: string) {
   return trimmed.length > 0 ? trimmed : null;
 }
 
-export async function updateContractorStatusAction(companyId: string, formData: FormData) {
+export async function updateContractorStatusAction(
+  companyId: string,
+  formData: FormData,
+) {
   const response = await fetch(
     `${apiBaseUrl}/contractors/admin/companies/${encodeURIComponent(companyId)}/status`,
     {
       method: "PATCH",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         status: textValue(formData, "status"),
-        statusReason: textValue(formData, "statusReason")
-      })
-    }
+        statusReason: textValue(formData, "statusReason"),
+      }),
+    },
   );
 
   if (!response.ok) {
@@ -37,6 +41,7 @@ export async function updateContractorStatusAction(companyId: string, formData: 
   }
 
   revalidatePath("/admin/contractors");
+  revalidatePath(`/admin/contractors/${companyId}`);
   revalidatePath("/contractor");
-  redirect("/admin/contractors");
+  redirect(`/admin/contractors/${companyId}`);
 }

@@ -24,11 +24,7 @@ body {
   margin: 0;
   background: var(--color-bg);
   color: var(--color-text);
-  font-family:
-    Arial,
-    "Apple SD Gothic Neo",
-    "Noto Sans KR",
-    sans-serif;
+  font-family: Arial, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
   letter-spacing: 0;
 }
 
@@ -126,12 +122,16 @@ h2 {
 }
 
 .mode-tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   min-height: 40px;
   border: 0;
   border-radius: 6px;
   background: transparent;
   color: var(--color-muted);
   font-weight: 700;
+  text-decoration: none;
 }
 
 .mode-tab.active {
@@ -209,6 +209,11 @@ h2 {
   background: #ffffff;
   color: var(--color-primary-dark);
   font-weight: 800;
+  text-decoration: none;
+}
+
+a.primary-button {
+  text-decoration: none;
 }
 
 .icon-button {
@@ -625,6 +630,11 @@ h2 {
   justify-content: flex-end;
 }
 
+.split-actions {
+  justify-content: flex-start;
+  flex-wrap: wrap;
+}
+
 .admin-action-stack {
   align-items: stretch;
   flex-direction: column;
@@ -670,6 +680,33 @@ h2 {
 .header-badges {
   flex-wrap: wrap;
   justify-content: flex-end;
+}
+
+.detail-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-bottom: 2px;
+}
+
+.detail-tab {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--color-muted);
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.detail-tab.active {
+  border-color: #7ac7e8;
+  background: #f5fbff;
+  color: var(--color-primary-dark);
 }
 
 .text-link,
@@ -1267,8 +1304,7 @@ h2 {
   overflow: hidden;
   background:
     linear-gradient(90deg, rgba(14, 116, 144, 0.06) 1px, transparent 1px),
-    linear-gradient(rgba(14, 116, 144, 0.06) 1px, transparent 1px),
-    #eef8fc;
+    linear-gradient(rgba(14, 116, 144, 0.06) 1px, transparent 1px), #eef8fc;
   background-size: 54px 54px;
 }
 

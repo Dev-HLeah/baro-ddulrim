@@ -1,7 +1,8 @@
 import Link from "next/link";
 import {
+  ContractorBidsTable,
   ContractorCompanySelector,
-  ContractorNavigationPanel,
+  ContractorOpportunitiesSection,
   ContractorSummaryMetrics,
 } from "@/components/contractor-sections";
 import {
@@ -13,7 +14,7 @@ import {
 
 export const dynamic = "force-dynamic";
 
-export default async function ContractorPage({
+export default async function ContractorBidsPage({
   searchParams,
 }: {
   searchParams: Promise<{ companyId?: string }>;
@@ -36,17 +37,25 @@ export default async function ContractorPage({
     <main className="workspace-page contractor-page">
       <header className="workspace-header">
         <p className="eyebrow">업체</p>
-        <h1>업체 작업대</h1>
+        <h1>입찰 관리</h1>
       </header>
 
       <div className="action-row split-actions">
-        <Link className="secondary-button" href="/contractor/register">
-          업체 등록 신청
+        <Link className="secondary-button" href="/contractor">
+          작업대 홈
         </Link>
+        {selectedCompany ? (
+          <Link
+            className="secondary-button"
+            href={`/contractor/jobs?companyId=${encodeURIComponent(selectedCompany.id)}`}
+          >
+            배정 작업
+          </Link>
+        ) : null}
       </div>
 
       <ContractorCompanySelector
-        basePath="/contractor"
+        basePath="/contractor/bids"
         companies={companies}
         selectedCompany={selectedCompany}
       />
@@ -58,7 +67,11 @@ export default async function ContractorPage({
             bids={bids}
             opportunities={opportunities}
           />
-          <ContractorNavigationPanel companyId={selectedCompany.id} />
+          <ContractorOpportunitiesSection
+            opportunities={opportunities}
+            selectedCompany={selectedCompany}
+          />
+          <ContractorBidsTable bids={bids} />
         </>
       ) : null}
     </main>
