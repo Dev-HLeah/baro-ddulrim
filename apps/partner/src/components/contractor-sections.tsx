@@ -13,6 +13,7 @@ import {
   submitContractorBidAction,
   submitWorkUpdateAction,
 } from "@/app/actions";
+import { LocationSearchInput } from "@/components/location-search-input";
 import type {
   ContractorAssignment,
   ContractorBidWithReport,
@@ -132,10 +133,7 @@ export function ContractorRegistrationForm({
                 required
               />
             </label>
-            <label className="form-field">
-              <span>주소</span>
-              <input name="address" placeholder="서울시 강남구" />
-            </label>
+            <LocationSearchInput />
             <label className="form-field">
               <span>활동 반경(km)</span>
               <input
@@ -166,11 +164,7 @@ export function ContractorRegistrationForm({
             <div className="checkbox-grid">
               {CONTRACTOR_SPECIALTIES.map((specialty) => (
                 <label className="checkbox-option" key={specialty}>
-                  <input
-                    name="specialties"
-                    type="checkbox"
-                    value={specialty}
-                  />
+                  <input name="specialties" type="checkbox" value={specialty} />
                   <span>{specialty}</span>
                 </label>
               ))}
@@ -213,7 +207,10 @@ export function ContractorNoCompanyScreen() {
     <section className="panel-section status-gate">
       <Building2 aria-hidden="true" size={48} />
       <h2>등록된 업체가 없습니다</h2>
-      <p>먼저 업체 등록을 신청해 주세요. 관리자 승인 후 입찰에 참여할 수 있습니다.</p>
+      <p>
+        먼저 업체 등록을 신청해 주세요. 관리자 승인 후 입찰에 참여할 수
+        있습니다.
+      </p>
       <div className="action-row">
         <Link className="primary-button" href="/register">
           업체 등록 신청

@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { ArrowRight, FileSearch, MapPin, Phone } from "lucide-react";
+import { ArrowRight, FileSearch, Phone } from "lucide-react";
 import { createCustomerReportAction } from "@/app/actions";
+import { LocationSearchInput } from "@/components/location-search-input";
 import { ReportPhotoUploader } from "@/components/report-photo-uploader";
 
 export default function NewReportPage() {
@@ -38,16 +39,7 @@ export default function NewReportPage() {
             />
           </div>
 
-          <label htmlFor="location">위치</label>
-          <div className="input-row">
-            <MapPin aria-hidden="true" size={18} />
-            <input
-              id="location"
-              name="location"
-              placeholder="주소, 동 이름, 상호명"
-              required
-            />
-          </div>
+          <LocationSearchInput />
 
           <label htmlFor="description">증상</label>
           <textarea

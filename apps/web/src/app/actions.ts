@@ -28,6 +28,14 @@ export async function createCustomerReportAction(formData: FormData) {
 
   appendText(apiFormData, "phone", textValue(formData, "phone"));
   appendText(apiFormData, "location", textValue(formData, "location"));
+  appendText(apiFormData, "placeName", textValue(formData, "placeName"));
+  appendText(
+    apiFormData,
+    "roadAddressText",
+    textValue(formData, "roadAddressText"),
+  );
+  appendText(apiFormData, "latitude", textValue(formData, "latitude"));
+  appendText(apiFormData, "longitude", textValue(formData, "longitude"));
   appendText(apiFormData, "description", textValue(formData, "description"));
 
   formData

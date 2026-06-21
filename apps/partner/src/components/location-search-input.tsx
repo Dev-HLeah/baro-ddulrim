@@ -1,0 +1,201 @@
+"use client";
+
+import { MapPin, Search, X } from "lucide-react";
+import { useMemo, useState } from "react";
+
+type LocationCandidate = {
+  id: string;
+  title: string;
+  addressText: string | null;
+  roadAddressText: string | null;
+  placeName: string | null;
+  category: string | null;
+  latitude: number;
+  longitude: number;
+};
+
+const apiBaseUrl =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
+
+function displayAddress(candidate: LocationCandidate) {
+  return candidate.roadAddressText ?? candidate.addressText ?? candidate.title;
+}
+
+export function LocationSearchInput() {
+  const [isOpen, setIsOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const [candidates, setCandidates] = useState<LocationCandidate[]>([]);
+  const [selected, setSelected] = useState<LocationCandidate | null>(null);
+  const [isSearching, setIsSearching] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const addressValue = selected ? displayAddress(selected) : "";
+  const selectedSummary = useMemo(() => {
+    if (!selected) {
+      return null;
+    }
+
+    return [selected.placeName, selected.roadAddressText, selected.addressText]
+      .filter(Boolean)
+      .join(" · ");
+  }, [selected]);
+
+  async function searchLocations() {
+    const cleanQuery = query.trim();
+
+    if (!cleanQuery) {
+      setError("검색어를 입력해 주세요.");
+      return;
+    }
+
+    setIsSearching(true);
+    setError(null);
+
+    try {
+      const response = await fetch(
+        `${apiBaseUrl}/maps/search?query=${encodeURIComponent(cleanQuery)}`,
+        {
+          cache: "no-store",
+        },
+      );
+
+      if (!response.ok) {
+        const message = await response.text();
+        throw new Error(message || "주소를 검색하지 못했습니다.");
+      }
+
+      setCandidates((await response.json()) as LocationCandidate[]);
+    } catch (searchError) {
+      setCandidates([]);
+      setError(
+        searchError instanceof Error
+          ? searchError.message
+          : "주소를 검색하지 못했습니다.",
+      );
+    } finally {
+      setIsSearching(false);
+    }
+  }
+
+  function selectCandidate(candidate: LocationCandidate) {
+    setSelected(candidate);
+    setQuery(candidate.title);
+    setIsOpen(false);
+  }
+
+  return (
+    <div className="location-search-field">
+      <label htmlFor="address">주소</label>
+      <div
+        className={`input-row location-search-trigger ${selected ? "selected" : ""}`}
+      >
+        <MapPin aria-hidden="true" size={18} />
+        <input
+          id="address"
+          name="address"
+          onClick={() => setIsOpen(true)}
+          onFocus={() => setIsOpen(true)}
+          placeholder="주소, 동 이름, 상호명"
+          readOnly
+          value={addressValue}
+        />
+        <button
+          className="secondary-button"
+          onClick={() => setIsOpen(true)}
+          type="button"
+        >
+          검색
+        </button>
+      </div>
+
+      <input
+        name="latitude"
+        type="hidden"
+        value={selected?.latitude?.toString() ?? ""}
+      />
+      <input
+        name="longitude"
+        type="hidden"
+        value={selected?.longitude?.toString() ?? ""}
+      />
+
+      {selectedSummary ? <p className="field-note">{selectedSummary}</p> : null}
+
+      {isOpen ? (
+        <div className="modal-backdrop">
+          <section
+            className="location-modal"
+            aria-labelledby="location-search-title"
+            role="dialog"
+          >
+            <div className="modal-head">
+              <div>
+                <p className="eyebrow">주소 검색</p>
+                <h2 id="location-search-title">업체 주소 선택</h2>
+              </div>
+              <button
+                aria-label="닫기"
+                className="icon-button"
+                onClick={() => setIsOpen(false)}
+                type="button"
+              >
+                <X aria-hidden="true" size={16} />
+              </button>
+            </div>
+
+            <div className="modal-search-row">
+              <div className="input-row">
+                <Search aria-hidden="true" size={18} />
+                <input
+                  autoFocus
+                  onChange={(event) => setQuery(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      event.preventDefault();
+                      void searchLocations();
+                    }
+                  }}
+                  placeholder="주소, 동 이름, 상호명"
+                  value={query}
+                />
+              </div>
+              <button
+                className="primary-button"
+                disabled={isSearching}
+                onClick={searchLocations}
+                type="button"
+              >
+                검색
+              </button>
+            </div>
+
+            {error ? <p className="empty-text">{error}</p> : null}
+
+            <div className="location-result-list">
+              {candidates.map((candidate) => (
+                <button
+                  className="location-result"
+                  key={candidate.id}
+                  onClick={() => selectCandidate(candidate)}
+                  type="button"
+                >
+                  <strong>{candidate.title}</strong>
+                  <span>{displayAddress(candidate)}</span>
+                  {candidate.addressText &&
+                  candidate.addressText !== displayAddress(candidate) ? (
+                    <small>{candidate.addressText}</small>
+                  ) : null}
+                </button>
+              ))}
+              {!isSearching && candidates.length === 0 && !error ? (
+                <p className="empty-text">검색 결과가 없습니다.</p>
+              ) : null}
+              {isSearching ? (
+                <p className="empty-text">검색 중입니다.</p>
+              ) : null}
+            </div>
+          </section>
+        </div>
+      ) : null}
+    </div>
+  );
+}

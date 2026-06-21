@@ -8,7 +8,7 @@ import {
   issueTypeLabels,
   labelOf,
   statusLabels,
-  urgencyLabels
+  urgencyLabels,
 } from "@/lib/labels";
 
 type ReportMapProps = {
@@ -17,23 +17,70 @@ type ReportMapProps = {
   kakaoJavascriptKey?: string;
 };
 
+type KakaoLatLng = unknown;
+
+type KakaoBounds = {
+  extend: (position: KakaoLatLng) => void;
+};
+
+type KakaoMap = {
+  setBounds: (bounds: KakaoBounds) => void;
+  setLevel: (level: number) => void;
+};
+
+type KakaoMarker = {
+  setMap: (map: KakaoMap | null) => void;
+};
+
+type KakaoInfoWindow = {
+  open: (map: KakaoMap, marker: KakaoMarker) => void;
+  close: () => void;
+};
+
+type KakaoMaps = {
+  LatLng: new (latitude: number, longitude: number) => KakaoLatLng;
+  LatLngBounds: new () => KakaoBounds;
+  Map: new (
+    container: HTMLElement,
+    options: { center: KakaoLatLng; level: number },
+  ) => KakaoMap;
+  Marker: new (options: {
+    position: KakaoLatLng;
+    title?: string;
+  }) => KakaoMarker;
+  InfoWindow: new (options: {
+    content: string;
+    removable?: boolean;
+  }) => KakaoInfoWindow;
+  event: {
+    addListener: (
+      target: unknown,
+      eventName: string,
+      handler: () => void,
+    ) => void;
+  };
+  load: (callback: () => void) => void;
+};
+
 type KakaoWindow = Window & {
   kakao?: {
-    maps: {
-      LatLng: new (latitude: number, longitude: number) => unknown;
-      Map: new (container: HTMLElement, options: Record<string, unknown>) => unknown;
-      Marker: new (options: Record<string, unknown>) => { setMap: (map: unknown) => void };
-      InfoWindow: new (options: Record<string, unknown>) => { open: (map: unknown, marker: unknown) => void };
-      event: {
-        addListener: (target: unknown, eventName: string, handler: () => void) => void;
-      };
-      load: (callback: () => void) => void;
-    };
+    maps: KakaoMaps;
   };
 };
 
+type FallbackBounds = {
+  minLatitude: number;
+  maxLatitude: number;
+  minLongitude: number;
+  maxLongitude: number;
+};
+
+const kakaoMapScriptId = "kakao-map-sdk";
+
 function markerAddress(marker: ReportMapMarker) {
-  return marker.placeName ?? marker.roadAddressText ?? marker.addressText ?? "-";
+  return (
+    marker.placeName ?? marker.roadAddressText ?? marker.addressText ?? "-"
+  );
 }
 
 function markerTone(marker: ReportMapMarker) {
@@ -61,106 +108,254 @@ function escapeHtml(value: string) {
     .replaceAll("'", "&#039;");
 }
 
-export function ReportMap({ markers, provider, kakaoJavascriptKey }: ReportMapProps) {
+function markerInfoContent(marker: ReportMapMarker) {
+  const title = escapeHtml(marker.summary ?? marker.reportNo);
+  const address = escapeHtml(markerAddress(marker));
+  const meta = escapeHtml(
+    `${labelOf(statusLabels, marker.status)} · ${labelOf(urgencyLabels, marker.urgency)}`,
+  );
+
+  return `
+    <div style="min-width:190px;padding:10px 12px;font-size:13px;line-height:1.45;color:#1f2937;">
+      <strong style="display:block;margin-bottom:5px;font-size:14px;">${title}</strong>
+      <span style="display:block;color:#475569;">${address}</span>
+      <small style="display:block;margin-top:6px;color:#64748b;">${meta}</small>
+    </div>
+  `;
+}
+
+function markerPosition(marker: ReportMapMarker) {
+  return {
+    latitude: marker.latitude as number,
+    longitude: marker.longitude as number,
+  };
+}
+
+function computeFallbackBounds(markers: ReportMapMarker[]) {
+  if (markers.length === 0) {
+    return null;
+  }
+
+  const latitudes = markers.map((marker) => marker.latitude as number);
+  const longitudes = markers.map((marker) => marker.longitude as number);
+  const minLatitude = Math.min(...latitudes);
+  const maxLatitude = Math.max(...latitudes);
+  const minLongitude = Math.min(...longitudes);
+  const maxLongitude = Math.max(...longitudes);
+
+  return {
+    minLatitude,
+    maxLatitude: maxLatitude === minLatitude ? maxLatitude + 0.01 : maxLatitude,
+    minLongitude,
+    maxLongitude:
+      maxLongitude === minLongitude ? maxLongitude + 0.01 : maxLongitude,
+  };
+}
+
+function fallbackPosition(
+  marker: ReportMapMarker,
+  bounds: FallbackBounds | null,
+) {
+  if (!bounds) {
+    return {
+      left: "50%",
+      top: "50%",
+    };
+  }
+
+  const { latitude, longitude } = markerPosition(marker);
+  const x =
+    ((longitude - bounds.minLongitude) /
+      (bounds.maxLongitude - bounds.minLongitude)) *
+      82 +
+    9;
+  const y =
+    (1 -
+      (latitude - bounds.minLatitude) /
+        (bounds.maxLatitude - bounds.minLatitude)) *
+      74 +
+    13;
+
+  return {
+    left: `${x}%`,
+    top: `${y}%`,
+  };
+}
+
+export function ReportMap({
+  markers,
+  provider,
+  kakaoJavascriptKey,
+}: ReportMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [isKakaoLoading, setIsKakaoLoading] = useState(false);
+  const [kakaoLoadError, setKakaoLoadError] = useState<string | null>(null);
   const validMarkers = useMemo(
     () =>
       markers.filter(
-        (marker) => typeof marker.latitude === "number" && typeof marker.longitude === "number"
+        (marker) =>
+          typeof marker.latitude === "number" &&
+          typeof marker.longitude === "number",
       ),
-    [markers]
+    [markers],
   );
-  const [selectedId, setSelectedId] = useState(validMarkers[0]?.id ?? null);
-  const selectedMarker = validMarkers.find((marker) => marker.id === selectedId) ?? validMarkers[0];
-  const hasKakaoKey = provider === "kakao" && Boolean(kakaoJavascriptKey);
-  const bounds = useMemo(() => {
-    const latitudes = validMarkers.map((marker) => marker.latitude as number);
-    const longitudes = validMarkers.map((marker) => marker.longitude as number);
-    const minLatitude = Math.min(...latitudes);
-    const maxLatitude = Math.max(...latitudes);
-    const minLongitude = Math.min(...longitudes);
-    const maxLongitude = Math.max(...longitudes);
-
-    return {
-      minLatitude,
-      maxLatitude: maxLatitude === minLatitude ? maxLatitude + 0.01 : maxLatitude,
-      minLongitude,
-      maxLongitude: maxLongitude === minLongitude ? maxLongitude + 0.01 : maxLongitude
-    };
-  }, [validMarkers]);
+  const fallbackBounds = useMemo(
+    () => computeFallbackBounds(validMarkers),
+    [validMarkers],
+  );
+  const selectedMarker =
+    validMarkers.find((marker) => marker.id === selectedId) ??
+    validMarkers[0] ??
+    null;
+  const shouldUseKakao = provider === "kakao" && Boolean(kakaoJavascriptKey);
+  const shouldShowFallback = !shouldUseKakao || Boolean(kakaoLoadError);
 
   useEffect(() => {
-    if (!hasKakaoKey || !mapRef.current || validMarkers.length === 0) {
+    if (validMarkers.length === 0) {
+      if (selectedId) {
+        setSelectedId(null);
+      }
       return;
     }
 
+    if (
+      !selectedId ||
+      !validMarkers.some((marker) => marker.id === selectedId)
+    ) {
+      setSelectedId(validMarkers[0].id);
+    }
+  }, [selectedId, validMarkers]);
+
+  useEffect(() => {
+    if (!shouldUseKakao || !mapRef.current) {
+      setIsKakaoLoading(false);
+      return;
+    }
+
+    if (validMarkers.length === 0) {
+      setKakaoLoadError(null);
+      setIsKakaoLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    let renderedMarkers: KakaoMarker[] = [];
+    let renderedInfoWindows: KakaoInfoWindow[] = [];
+    let activeInfoWindow: KakaoInfoWindow | null = null;
     const kakaoWindow = window as KakaoWindow;
-    const renderMap = () => {
-      if (!mapRef.current || !kakaoWindow.kakao) {
+
+    const initializeMap = () => {
+      if (cancelled || !mapRef.current || !kakaoWindow.kakao?.maps) {
         return;
       }
 
       kakaoWindow.kakao.maps.load(() => {
-        const centerMarker = selectedMarker ?? validMarkers[0];
-        const center = new kakaoWindow.kakao!.maps.LatLng(
-          centerMarker.latitude as number,
-          centerMarker.longitude as number
-        );
-        const map = new kakaoWindow.kakao!.maps.Map(mapRef.current!, {
-          center,
-          level: 8
-        });
+        if (cancelled || !mapRef.current || !kakaoWindow.kakao?.maps) {
+          return;
+        }
 
-        validMarkers.forEach((marker) => {
-          const position = new kakaoWindow.kakao!.maps.LatLng(
-            marker.latitude as number,
-            marker.longitude as number
-          );
-          const kakaoMarker = new kakaoWindow.kakao!.maps.Marker({ position });
-          const infoWindow = new kakaoWindow.kakao!.maps.InfoWindow({
-            content: `<div style="padding:8px 10px;font-size:13px;">${escapeHtml(
-              marker.summary ?? marker.reportNo
-            )}</div>`
+        const kakaoMaps = kakaoWindow.kakao.maps;
+        const firstMarker = validMarkers[0];
+        const firstPosition = markerPosition(firstMarker);
+        const map = new kakaoMaps.Map(mapRef.current, {
+          center: new kakaoMaps.LatLng(
+            firstPosition.latitude,
+            firstPosition.longitude,
+          ),
+          level: 7,
+        });
+        const bounds = new kakaoMaps.LatLngBounds();
+
+        renderedMarkers = validMarkers.map((marker) => {
+          const { latitude, longitude } = markerPosition(marker);
+          const position = new kakaoMaps.LatLng(latitude, longitude);
+          const kakaoMarker = new kakaoMaps.Marker({
+            position,
+            title: marker.summary ?? marker.reportNo,
+          });
+          const infoWindow = new kakaoMaps.InfoWindow({
+            content: markerInfoContent(marker),
+            removable: true,
           });
 
+          bounds.extend(position);
           kakaoMarker.setMap(map);
-          kakaoWindow.kakao!.maps.event.addListener(kakaoMarker, "click", () => {
+          renderedInfoWindows.push(infoWindow);
+          kakaoMaps.event.addListener(kakaoMarker, "click", () => {
+            activeInfoWindow?.close();
+            activeInfoWindow = infoWindow;
             setSelectedId(marker.id);
             infoWindow.open(map, kakaoMarker);
           });
+
+          return kakaoMarker;
         });
+
+        if (validMarkers.length > 1) {
+          map.setBounds(bounds);
+        } else {
+          map.setLevel(4);
+        }
+
+        setKakaoLoadError(null);
+        setIsKakaoLoading(false);
       });
     };
 
-    if (kakaoWindow.kakao) {
-      renderMap();
-      return;
+    const handleScriptError = () => {
+      if (cancelled) {
+        return;
+      }
+
+      setKakaoLoadError("Kakao 지도를 불러오지 못했습니다.");
+      setIsKakaoLoading(false);
+    };
+
+    setIsKakaoLoading(true);
+    setKakaoLoadError(null);
+
+    if (kakaoWindow.kakao?.maps) {
+      initializeMap();
+      return () => {
+        cancelled = true;
+        renderedMarkers.forEach((marker) => marker.setMap(null));
+        renderedInfoWindows.forEach((infoWindow) => infoWindow.close());
+      };
     }
 
-    const script = document.createElement("script");
-    script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${kakaoJavascriptKey}&autoload=false`;
-    script.async = true;
-    script.onload = renderMap;
-    document.head.appendChild(script);
-  }, [hasKakaoKey, kakaoJavascriptKey, selectedMarker, validMarkers]);
+    let script = document.getElementById(
+      kakaoMapScriptId,
+    ) as HTMLScriptElement | null;
 
-  function fallbackPosition(marker: ReportMapMarker) {
-    const latitude = marker.latitude as number;
-    const longitude = marker.longitude as number;
-    const x = ((longitude - bounds.minLongitude) / (bounds.maxLongitude - bounds.minLongitude)) * 82 + 9;
-    const y = (1 - (latitude - bounds.minLatitude) / (bounds.maxLatitude - bounds.minLatitude)) * 74 + 13;
+    if (!script) {
+      script = document.createElement("script");
+      script.id = kakaoMapScriptId;
+      script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${kakaoJavascriptKey}&autoload=false`;
+      script.async = true;
+      document.head.appendChild(script);
+    }
 
-    return {
-      left: `${x}%`,
-      top: `${y}%`
+    script.addEventListener("load", initializeMap);
+    script.addEventListener("error", handleScriptError);
+
+    return () => {
+      cancelled = true;
+      script?.removeEventListener("load", initializeMap);
+      script?.removeEventListener("error", handleScriptError);
+      renderedMarkers.forEach((marker) => marker.setMap(null));
+      renderedInfoWindows.forEach((infoWindow) => infoWindow.close());
     };
-  }
+  }, [kakaoJavascriptKey, shouldUseKakao, validMarkers]);
 
   return (
     <div className="report-map-layout">
       <div className="report-map-canvas" aria-label="신고 위치 마커">
-        {hasKakaoKey ? <div className="kakao-map-container" ref={mapRef} /> : null}
-        {!hasKakaoKey ? (
+        {shouldUseKakao && !kakaoLoadError ? (
+          <div className="kakao-map-container" ref={mapRef} />
+        ) : null}
+
+        {shouldShowFallback ? (
           <div className="fallback-map-grid">
             {validMarkers.map((marker) => (
               <button
@@ -170,18 +365,29 @@ export function ReportMap({ markers, provider, kakaoJavascriptKey }: ReportMapPr
                 }`}
                 key={marker.id}
                 onClick={() => setSelectedId(marker.id)}
-                style={fallbackPosition(marker)}
+                style={fallbackPosition(marker, fallbackBounds)}
                 type="button"
               >
                 <MapPin aria-hidden="true" size={18} />
               </button>
             ))}
-            {validMarkers.length === 0 ? (
-              <div className="map-empty-state">
-                <MapPin aria-hidden="true" size={28} />
-                <p>확정 좌표가 있는 신고가 없습니다.</p>
-              </div>
-            ) : null}
+          </div>
+        ) : null}
+
+        {isKakaoLoading ? (
+          <div className="map-loading-state">
+            실제 지도를 불러오는 중입니다.
+          </div>
+        ) : null}
+
+        {kakaoLoadError ? (
+          <div className="map-provider-note">{kakaoLoadError}</div>
+        ) : null}
+
+        {validMarkers.length === 0 ? (
+          <div className="map-empty-state">
+            <MapPin aria-hidden="true" size={28} />
+            <p>확정 좌표가 있는 신고가 없습니다.</p>
           </div>
         ) : null}
       </div>
@@ -189,7 +395,9 @@ export function ReportMap({ markers, provider, kakaoJavascriptKey }: ReportMapPr
       <aside className="report-map-panel" aria-label="선택된 신고">
         {selectedMarker ? (
           <>
-            <span className={`urgency-badge ${selectedMarker.urgency.toLowerCase()}`}>
+            <span
+              className={`urgency-badge ${selectedMarker.urgency.toLowerCase()}`}
+            >
               {labelOf(urgencyLabels, selectedMarker.urgency)}
             </span>
             <h2>{selectedMarker.summary ?? selectedMarker.reportNo}</h2>
@@ -221,7 +429,9 @@ export function ReportMap({ markers, provider, kakaoJavascriptKey }: ReportMapPr
             </dl>
           </>
         ) : (
-          <p className="empty-text">마커를 선택하면 신고와 처리 상태를 볼 수 있습니다.</p>
+          <p className="empty-text">
+            마커를 선택하면 신고와 처리 상태를 볼 수 있습니다.
+          </p>
         )}
       </aside>
     </div>

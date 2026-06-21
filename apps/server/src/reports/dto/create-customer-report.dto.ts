@@ -24,6 +24,11 @@ export class CreateCustomerReportDto {
   placeName?: string | null;
 
   @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  roadAddressText?: string | null;
+
+  @IsOptional()
   @Type(() => Number)
   @IsNumber()
   latitude?: number | null;

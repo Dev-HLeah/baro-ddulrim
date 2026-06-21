@@ -90,6 +90,8 @@ export async function registerContractorAction(formData: FormData) {
     "representativeName",
     "businessNumber",
     "address",
+    "latitude",
+    "longitude",
     "serviceRegions",
     "serviceRadiusKm",
     "yearsOfExperience",
