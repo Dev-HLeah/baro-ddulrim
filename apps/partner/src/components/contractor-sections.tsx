@@ -1,16 +1,18 @@
 import Link from "next/link";
 import {
+  AlertTriangle,
   Building2,
   Clock3,
   FileCheck2,
   Hammer,
+  Hourglass,
   TimerReset,
 } from "lucide-react";
 import {
   registerContractorAction,
   submitContractorBidAction,
   submitWorkUpdateAction,
-} from "@/app/contractor/actions";
+} from "@/app/actions";
 import type {
   ContractorAssignment,
   ContractorBidWithReport,
@@ -26,6 +28,7 @@ import {
   statusLabels,
   urgencyLabels,
 } from "@/lib/labels";
+import { CONTRACTOR_SPECIALTIES } from "@/lib/contractor-specialties";
 
 const workStatusOptions = [
   "DISPATCH_SCHEDULED",
@@ -141,6 +144,14 @@ export function ContractorRegistrationForm({
                 placeholder="20"
               />
             </label>
+            <label className="form-field">
+              <span>업력(년)</span>
+              <input
+                inputMode="numeric"
+                name="yearsOfExperience"
+                placeholder="5"
+              />
+            </label>
           </div>
           <label className="form-field">
             <span>활동 지역</span>
@@ -150,6 +161,21 @@ export function ContractorRegistrationForm({
               required
             />
           </label>
+          <fieldset className="form-field checkbox-group">
+            <legend>주 종목 (다중 선택)</legend>
+            <div className="checkbox-grid">
+              {CONTRACTOR_SPECIALTIES.map((specialty) => (
+                <label className="checkbox-option" key={specialty}>
+                  <input
+                    name="specialties"
+                    type="checkbox"
+                    value={specialty}
+                  />
+                  <span>{specialty}</span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
           <label className="form-field textarea-field">
             <span>업체 소개</span>
             <textarea
@@ -182,39 +208,54 @@ export function ContractorRegistrationForm({
   );
 }
 
-export function ContractorCompanySelector({
-  basePath,
-  companies,
-  selectedCompany,
-}: {
-  basePath: string;
-  companies: ContractorCompany[];
-  selectedCompany: ContractorCompany | null;
-}) {
-  if (companies.length === 0) {
-    return (
-      <section className="panel-section">
-        <p className="empty-text">승인된 업체가 없습니다.</p>
-      </section>
-    );
-  }
-
+export function ContractorNoCompanyScreen() {
   return (
-    <section className="contractor-company-list" aria-label="업체 선택">
-      {companies.map((company) => (
-        <Link
-          className={`company-switch-card ${company.id === selectedCompany?.id ? "active" : ""}`}
-          href={`${basePath}?companyId=${encodeURIComponent(company.id)}`}
-          key={company.id}
-        >
-          <Building2 aria-hidden="true" size={18} />
-          <span>{company.companyName}</span>
-          <small>
-            {company.serviceRegions.join(", ")}
-            {company.serviceRadiusKm ? ` · ${company.serviceRadiusKm}km` : ""}
-          </small>
+    <section className="panel-section status-gate">
+      <Building2 aria-hidden="true" size={48} />
+      <h2>등록된 업체가 없습니다</h2>
+      <p>먼저 업체 등록을 신청해 주세요. 관리자 승인 후 입찰에 참여할 수 있습니다.</p>
+      <div className="action-row">
+        <Link className="primary-button" href="/register">
+          업체 등록 신청
         </Link>
-      ))}
+      </div>
+    </section>
+  );
+}
+
+export function ContractorWaitingScreen({
+  company,
+}: {
+  company: ContractorCompany;
+}) {
+  return (
+    <section className="panel-section status-gate">
+      <Hourglass aria-hidden="true" size={48} />
+      <h2>관리자의 승인을 기다리고 있습니다</h2>
+      <p>
+        <strong>{company.companyName}</strong> 등록 신청이 접수되었습니다.
+        <br />
+        승인이 완료되면 이메일과 문자로 안내해 드립니다.
+      </p>
+    </section>
+  );
+}
+
+export function ContractorRejectedScreen({
+  company,
+}: {
+  company: ContractorCompany;
+}) {
+  return (
+    <section className="panel-section status-gate">
+      <AlertTriangle aria-hidden="true" size={48} />
+      <h2>업체 등록이 반려되었습니다</h2>
+      <p>{company.statusReason ?? "자세한 사항은 관리자에게 문의해 주세요."}</p>
+      <div className="action-row">
+        <Link className="secondary-button" href="/register">
+          다시 등록 신청
+        </Link>
+      </div>
     </section>
   );
 }
@@ -258,13 +299,7 @@ export function ContractorSummaryMetrics({
   );
 }
 
-export function ContractorNavigationPanel({
-  companyId,
-}: {
-  companyId: string;
-}) {
-  const query = `?companyId=${encodeURIComponent(companyId)}`;
-
+export function ContractorNavigationPanel() {
   return (
     <section className="panel-section">
       <div className="section-header">
@@ -274,10 +309,10 @@ export function ContractorNavigationPanel({
         </div>
       </div>
       <div className="action-row split-actions">
-        <Link className="secondary-button" href={`/contractor/bids${query}`}>
+        <Link className="secondary-button" href="/bids">
           입찰 관리
         </Link>
-        <Link className="primary-button" href={`/contractor/jobs${query}`}>
+        <Link className="primary-button" href="/jobs">
           배정 작업
         </Link>
       </div>

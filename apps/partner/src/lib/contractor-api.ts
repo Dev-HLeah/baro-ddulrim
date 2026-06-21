@@ -5,6 +5,7 @@ export type ContractorCompany = {
   phone: string;
   email: string;
   status: string;
+  statusReason?: string | null;
   serviceRegions: string[];
   serviceRadiusKm: number | null;
   address: string | null;
@@ -128,8 +129,23 @@ async function fetchJson<T>(path: string, fallback: T): Promise<T> {
   }
 }
 
-export function getContractorCompanies() {
-  return fetchJson<ContractorCompany[]>("/contractors/companies", []);
+export async function getMyCompany(
+  companyId: string,
+): Promise<ContractorCompany | null> {
+  try {
+    const response = await fetch(
+      `${apiBaseUrl}/contractors/companies/${encodeURIComponent(companyId)}`,
+      { cache: "no-store" },
+    );
+
+    if (!response.ok) {
+      return null;
+    }
+
+    return (await response.json()) as ContractorCompany;
+  } catch {
+    return null;
+  }
 }
 
 export function getContractorOpportunities(companyId: string) {

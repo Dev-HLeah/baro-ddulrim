@@ -19,6 +19,7 @@ import {
   TemplateChannel,
   Urgency
 } from "../generated/prisma/client";
+import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateCustomerReportDto } from "./dto/create-customer-report.dto";
 import { ApproveReportDto, AssignReportDto, UpdateReportDto } from "./dto/report-actions.dto";
@@ -34,7 +35,8 @@ type ReportUploadFile = {
 export class ReportsService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly config: ConfigService
+    private readonly config: ConfigService,
+    private readonly notifications: NotificationsService
   ) {}
 
   async createFromCustomer(dto: CreateCustomerReportDto, files: ReportUploadFile[]) {
@@ -505,7 +507,9 @@ export class ReportsService {
       const bid = await tx.bid.findUnique({
         where: { id: dto.bidId },
         include: {
-          contractorCompany: true
+          contractorCompany: {
+            include: { account: true }
+          }
         }
       });
 
@@ -601,10 +605,42 @@ export class ReportsService {
         }
       });
 
-      return nextReport;
+      return {
+        nextReport,
+        notify: {
+          contractor: {
+            email: bid.contractorCompany.account.email,
+            phone: bid.contractorCompany.account.phone,
+            companyName: bid.contractorCompany.companyName
+          },
+          customer: {
+            phone: report.customerPhone
+          },
+          info: {
+            reportNo: report.reportNo,
+            issueSummary: report.summary ?? "접수",
+            estimatedPrice: bid.estimatedPrice
+              ? this.formatNumber(bid.estimatedPrice)
+              : "미정",
+            availableTime: bid.availableTime
+              ? this.formatDateTimeKo(bid.availableTime)
+              : "미정"
+          }
+        }
+      };
     });
 
-    return this.findOne(updated.reportNo);
+    const { notify } = updated;
+
+    await Promise.all([
+      this.notifications.notifyContractorAssigned(notify.contractor, notify.info),
+      this.notifications.notifyCustomerAssigned(notify.customer, {
+        ...notify.info,
+        companyName: notify.contractor.companyName
+      })
+    ]);
+
+    return this.findOne(updated.nextReport.reportNo);
   }
 
   private getMinBidPrice(bids: Array<{ estimatedPrice: number | null }>) {

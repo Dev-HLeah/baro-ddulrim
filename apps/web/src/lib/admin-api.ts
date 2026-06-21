@@ -164,6 +164,8 @@ export type AdminContractorCompany = {
   statusReason: string | null;
   serviceRegions: string[];
   serviceRadiusKm: number | null;
+  yearsOfExperience: number | null;
+  specialties: string[];
   description: string | null;
   address: string | null;
   latitude: number | null;

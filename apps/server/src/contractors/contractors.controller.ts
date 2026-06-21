@@ -63,6 +63,11 @@ export class ContractorsController {
     return this.contractorsService.findCompanies();
   }
 
+  @Get("companies/:companyId")
+  async findCompanyProfile(@Param("companyId") companyId: string) {
+    return this.contractorsService.findCompanyProfile(companyId);
+  }
+
   @Get(":companyId/opportunities")
   async findOpportunities(@Param("companyId") companyId: string) {
     return this.contractorsService.findOpportunities(companyId);

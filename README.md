@@ -14,8 +14,9 @@
 
 ```txt
 apps/
-  web/      # 고객/관리자/업체 웹
-  server/   # NestJS API
+  web/      # 고객/관리자 웹 (3000)
+  partner/  # 업체 웹 (3001)
+  server/   # NestJS API (4000)
   mobile/   # 향후 Flutter 앱
 docs/       # 기획/설계 문서
 ```
@@ -25,6 +26,7 @@ docs/       # 기획/설계 문서
 ```bash
 pnpm install
 pnpm dev:web
+pnpm dev:partner
 pnpm dev:server
 pnpm build
 pnpm typecheck
@@ -37,6 +39,9 @@ pnpm typecheck
 - `apps/web/.env.example`
 - `apps/web/.env.dev`
 - `apps/web/.env.prd`
+- `apps/partner/.env.example`
+- `apps/partner/.env.dev`
+- `apps/partner/.env.prd`
 - `apps/server/.env.example`
 - `apps/server/.env.dev`
 - `apps/server/.env.prd`

@@ -18,7 +18,7 @@ export default async function ContractorRegisterPage({
       </header>
 
       <div className="action-row split-actions">
-        <Link className="secondary-button" href="/contractor">
+        <Link className="secondary-button" href="/">
           업체 작업대
         </Link>
       </div>

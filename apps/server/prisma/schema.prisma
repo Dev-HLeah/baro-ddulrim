@@ -326,6 +326,8 @@ model ContractorCompany {
   longitude              Decimal?         @db.Decimal(10, 7)
   serviceRegions         String[]
   serviceRadiusKm        Int?
+  yearsOfExperience      Int?
+  specialties            String[]
   description            String?          @db.Text
   status                 ContractorStatus @default(REVIEWING)
   statusReason           String?

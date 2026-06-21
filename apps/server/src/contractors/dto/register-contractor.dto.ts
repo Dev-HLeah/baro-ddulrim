@@ -41,6 +41,14 @@ export class RegisterContractorDto {
   serviceRadiusKm?: number | null;
 
   @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  yearsOfExperience?: number | null;
+
+  @IsOptional()
+  specialties?: string[] | string | null;
+
+  @IsOptional()
   @IsString()
   description?: string | null;
 

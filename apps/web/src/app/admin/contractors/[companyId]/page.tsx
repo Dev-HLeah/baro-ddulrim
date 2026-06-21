@@ -73,6 +73,18 @@ export default async function AdminContractorDetailPage({
               <dd>{company.serviceRegions.join(", ") || "-"}</dd>
             </div>
             <div>
+              <dt>업력</dt>
+              <dd>
+                {company.yearsOfExperience != null
+                  ? `${company.yearsOfExperience}년`
+                  : "-"}
+              </dd>
+            </div>
+            <div>
+              <dt>주 종목</dt>
+              <dd>{company.specialties.join(", ") || "-"}</dd>
+            </div>
+            <div>
               <dt>주소</dt>
               <dd>{company.address ?? "-"}</dd>
             </div>

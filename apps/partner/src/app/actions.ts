@@ -1,7 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { PARTNER_COMPANY_COOKIE } from "@/lib/session";
 
 const apiBaseUrl =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
@@ -56,9 +58,9 @@ export async function submitContractorBidAction(
     throw new Error(message || "입찰을 제출하지 못했습니다.");
   }
 
-  revalidatePath("/contractor");
-  revalidatePath("/contractor/bids");
-  redirect(`/contractor/bids?companyId=${encodeURIComponent(companyId)}`);
+  revalidatePath("/");
+  revalidatePath("/bids");
+  redirect(`/bids?companyId=${encodeURIComponent(companyId)}`);
 }
 
 function appendText(target: FormData, key: string, value: string | null) {
@@ -90,8 +92,14 @@ export async function registerContractorAction(formData: FormData) {
     "address",
     "serviceRegions",
     "serviceRadiusKm",
+    "yearsOfExperience",
     "description",
   ].forEach((key) => appendText(apiFormData, key, textValue(formData, key)));
+  formData.getAll("specialties").forEach((value) => {
+    if (typeof value === "string" && value.trim().length > 0) {
+      apiFormData.append("specialties", value);
+    }
+  });
   appendFile(apiFormData, "businessLicense", formData.get("businessLicense"));
   appendFile(apiFormData, "companyPhoto", formData.get("companyPhoto"));
 
@@ -105,10 +113,21 @@ export async function registerContractorAction(formData: FormData) {
     throw new Error(message || "업체 등록 신청을 처리하지 못했습니다.");
   }
 
-  revalidatePath("/contractor");
-  revalidatePath("/contractor/register");
-  revalidatePath("/admin/contractors");
-  redirect("/contractor/register?registered=1");
+  const company = (await response.json()) as { id?: string };
+
+  if (company?.id) {
+    const store = await cookies();
+    store.set(PARTNER_COMPANY_COOKIE, company.id, {
+      httpOnly: true,
+      sameSite: "lax",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 365,
+    });
+  }
+
+  revalidatePath("/");
+  revalidatePath("/register");
+  redirect("/");
 }
 
 export async function submitWorkUpdateAction(
@@ -138,9 +157,7 @@ export async function submitWorkUpdateAction(
     throw new Error(message || "작업 상태를 저장하지 못했습니다.");
   }
 
-  revalidatePath("/contractor");
-  revalidatePath("/contractor/jobs");
-  revalidatePath("/admin");
-  revalidatePath("/admin/reports");
-  redirect(`/contractor/jobs?companyId=${encodeURIComponent(companyId)}`);
+  revalidatePath("/");
+  revalidatePath("/jobs");
+  redirect(`/jobs?companyId=${encodeURIComponent(companyId)}`);
 }

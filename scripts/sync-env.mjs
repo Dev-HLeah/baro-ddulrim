@@ -9,7 +9,7 @@ if (!validModes.has(mode)) {
   process.exit(1);
 }
 
-const appDirs = ["apps/web", "apps/server", "apps/mobile"];
+const appDirs = ["apps/web", "apps/partner", "apps/server"];
 let copiedCount = 0;
 const missing = [];
 

@@ -12,7 +12,9 @@ import {
   ReportStatus,
   WorkStatus
 } from "../generated/prisma/client";
+import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
+import { sanitizeSpecialties } from "./contractor-specialties";
 import { RegisterContractorDto } from "./dto/register-contractor.dto";
 import { SubmitBidDto } from "./dto/submit-bid.dto";
 import { SubmitWorkUpdateDto } from "./dto/submit-work-update.dto";
@@ -51,7 +53,8 @@ const reportStatusByWorkStatus: Record<WorkStatus, ReportStatus> = {
 export class ContractorsService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly config: ConfigService
+    private readonly config: ConfigService,
+    private readonly notifications: NotificationsService
   ) {}
 
   async registerCompany(dto: RegisterContractorDto, files: ContractorUploadFiles) {
@@ -122,6 +125,8 @@ export class ContractorsService {
           longitude: dto.longitude ?? null,
           serviceRegions: this.parseServiceRegions(dto.serviceRegions),
           serviceRadiusKm: dto.serviceRadiusKm ?? null,
+          yearsOfExperience: dto.yearsOfExperience ?? null,
+          specialties: sanitizeSpecialties(dto.specialties),
           description: this.cleanString(dto.description),
           status: ContractorStatus.REVIEWING,
           statusReason: "업체 등록 신청"
@@ -164,6 +169,20 @@ export class ContractorsService {
       include: this.companyInclude()
     });
 
+    const becameApproved =
+      (dto.status === ContractorStatus.APPROVED ||
+        dto.status === ContractorStatus.ACTIVE) &&
+      current.status !== ContractorStatus.APPROVED &&
+      current.status !== ContractorStatus.ACTIVE;
+
+    if (becameApproved) {
+      await this.notifications.notifyContractorApproved({
+        email: company.account.email,
+        phone: company.account.phone,
+        companyName: company.companyName
+      });
+    }
+
     return this.serializeCompany(company);
   }
 
@@ -203,6 +222,19 @@ export class ContractorsService {
       assignmentCount: company._count.assignments,
       workUpdateCount: company._count.workUpdates
     }));
+  }
+
+  async findCompanyProfile(companyId: string) {
+    const company = await this.prisma.contractorCompany.findUnique({
+      where: { id: companyId },
+      include: this.companyInclude()
+    });
+
+    if (!company) {
+      throw new NotFoundException("업체를 찾을 수 없습니다.");
+    }
+
+    return this.serializeCompany(company);
   }
 
   async findOpportunities(companyId: string) {
@@ -513,6 +545,8 @@ export class ContractorsService {
     longitude: Parameters<typeof toNumber>[0];
     serviceRegions: string[];
     serviceRadiusKm: number | null;
+    yearsOfExperience: number | null;
+    specialties: string[];
     description: string | null;
     status: ContractorStatus;
     statusReason: string | null;
@@ -544,6 +578,8 @@ export class ContractorsService {
       statusReason: company.statusReason,
       serviceRegions: company.serviceRegions,
       serviceRadiusKm: company.serviceRadiusKm,
+      yearsOfExperience: company.yearsOfExperience,
+      specialties: company.specialties,
       description: company.description,
       address: company.address,
       latitude: toNumber(company.latitude),
