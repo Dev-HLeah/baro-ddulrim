@@ -2,9 +2,11 @@ import { Type } from "class-transformer";
 import { IsNumber, IsOptional, IsString, MaxLength } from "class-validator";
 
 export class RegisterContractorDto {
+  // 식별 이메일은 로그인 토큰에서 가져오므로 더 이상 필수가 아니다.
+  @IsOptional()
   @IsString()
   @MaxLength(120)
-  email!: string;
+  email?: string | null;
 
   @IsString()
   @MaxLength(60)

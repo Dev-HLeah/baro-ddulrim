@@ -7,9 +7,11 @@ import {
   Patch,
   Post,
   UploadedFiles,
+  UseGuards,
   UseInterceptors
 } from "@nestjs/common";
 import { FilesInterceptor } from "@nestjs/platform-express";
+import { AdminGuard } from "../auth/admin.guard";
 import { CreateCustomerReportDto } from "./dto/create-customer-report.dto";
 import { ApproveReportDto, AssignReportDto, UpdateReportDto } from "./dto/report-actions.dto";
 import { ReportsService } from "./reports.service";
@@ -41,11 +43,13 @@ export class ReportsController {
   }
 
   @Get()
+  @UseGuards(AdminGuard)
   async findAll() {
     return this.reportsService.findAll();
   }
 
   @Get(":id")
+  @UseGuards(AdminGuard)
   async findOne(@Param("id") id: string) {
     const report = await this.reportsService.findOne(id);
 
@@ -57,16 +61,19 @@ export class ReportsController {
   }
 
   @Patch(":id")
+  @UseGuards(AdminGuard)
   async update(@Param("id") id: string, @Body() dto: UpdateReportDto) {
     return this.reportsService.update(id, dto);
   }
 
   @Post(":id/approve")
+  @UseGuards(AdminGuard)
   async approveForBidding(@Param("id") id: string, @Body() dto: ApproveReportDto) {
     return this.reportsService.approveForBidding(id, dto);
   }
 
   @Post(":id/assign")
+  @UseGuards(AdminGuard)
   async assignContractor(@Param("id") id: string, @Body() dto: AssignReportDto) {
     return this.reportsService.assignContractor(id, dto);
   }

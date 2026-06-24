@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { adminLogoutAction } from "@/app/admin/actions";
 
 const navItems = [
   { href: "/admin", label: "대시보드" },
@@ -30,6 +31,11 @@ export function AdminShell({ children }: { children: ReactNode }) {
             </Link>
           ))}
         </nav>
+        <form action={adminLogoutAction} className="admin-logout">
+          <button className="secondary-button" type="submit">
+            로그아웃
+          </button>
+        </form>
       </aside>
       <section className="admin-content">{children}</section>
     </main>

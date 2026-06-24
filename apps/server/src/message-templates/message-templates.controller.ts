@@ -1,8 +1,10 @@
-import { Body, Controller, Get, Param, Patch, Post } from "@nestjs/common";
+import { Body, Controller, Get, Param, Patch, Post, UseGuards } from "@nestjs/common";
+import { AdminGuard } from "../auth/admin.guard";
 import { CreateMessageTemplateDto, UpdateMessageTemplateDto } from "./dto/message-template.dto";
 import { MessageTemplatesService } from "./message-templates.service";
 
 @Controller("message-templates")
+@UseGuards(AdminGuard)
 export class MessageTemplatesController {
   constructor(private readonly messageTemplatesService: MessageTemplatesService) {}
 

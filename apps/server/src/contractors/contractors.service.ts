@@ -12,6 +12,7 @@ import {
   ReportStatus,
   WorkStatus
 } from "../generated/prisma/client";
+import type { AuthAccount } from "../auth/auth.types";
 import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { sanitizeSpecialties } from "./contractor-specialties";
@@ -57,8 +58,30 @@ export class ContractorsService {
     private readonly notifications: NotificationsService
   ) {}
 
-  async registerCompany(dto: RegisterContractorDto, files: ContractorUploadFiles) {
-    const email = this.requireCleanString(dto.email, "이메일을 입력해 주세요.").toLowerCase();
+  /** 로그인한 업체 계정과 연결된 업체 프로필을 반환한다. */
+  async getMyContext(account: AuthAccount) {
+    const company = account.companyId
+      ? await this.findCompanyProfile(account.companyId)
+      : null;
+
+    return {
+      id: account.id,
+      email: account.email,
+      name: account.name,
+      phone: account.phone,
+      company
+    };
+  }
+
+  async registerCompany(
+    account: AuthAccount,
+    dto: RegisterContractorDto,
+    files: ContractorUploadFiles
+  ) {
+    if (account.companyId) {
+      throw new ConflictException("이미 업체 등록이 진행 중인 계정입니다.");
+    }
+
     const name = this.requireCleanString(dto.name, "담당자 이름을 입력해 주세요.");
     const phone = this.requireCleanString(dto.phone, "연락처를 입력해 주세요.");
     const companyName = this.requireCleanString(dto.companyName, "업체명을 입력해 주세요.");
@@ -91,14 +114,9 @@ export class ContractorsService {
     );
 
     const company = await this.prisma.$transaction(async (tx) => {
-      const account = await tx.contractorAccount.upsert({
-        where: { email },
-        update: {
-          name,
-          phone
-        },
-        create: {
-          email,
+      await tx.contractorAccount.update({
+        where: { id: account.id },
+        data: {
           name,
           phone
         }

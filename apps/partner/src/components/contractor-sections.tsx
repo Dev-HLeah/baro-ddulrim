@@ -72,20 +72,14 @@ function toDatetimeLocal(value: string | null | undefined) {
 }
 
 export function ContractorRegistrationForm({
-  registered,
+  defaultName = "",
+  defaultPhone = "",
 }: {
-  registered?: boolean;
+  defaultName?: string;
+  defaultPhone?: string;
 }) {
   return (
     <>
-      {registered ? (
-        <section className="panel-section">
-          <p className="empty-text">
-            업체 등록 신청이 접수되었습니다. 관리자가 확인 후 승인합니다.
-          </p>
-        </section>
-      ) : null}
-
       <section className="panel-section">
         <div className="section-header">
           <div>
@@ -96,21 +90,18 @@ export function ContractorRegistrationForm({
         <form action={registerContractorAction} className="admin-form">
           <div className="form-grid">
             <label className="form-field">
-              <span>담당자 이메일</span>
-              <input
-                name="email"
-                placeholder="partner@example.com"
-                required
-                type="email"
-              />
-            </label>
-            <label className="form-field">
               <span>담당자 이름</span>
-              <input name="name" placeholder="홍길동" required />
+              <input
+                defaultValue={defaultName}
+                name="name"
+                placeholder="홍길동"
+                required
+              />
             </label>
             <label className="form-field">
               <span>연락처</span>
               <input
+                defaultValue={defaultPhone}
                 name="phone"
                 placeholder="010-0000-0000"
                 required

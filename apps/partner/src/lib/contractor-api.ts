@@ -1,3 +1,5 @@
+import { getAccessToken } from "@/lib/supabase/server";
+
 export type ContractorCompany = {
   id: string;
   companyName: string;
@@ -111,13 +113,32 @@ export type ContractorAssignment = {
   }>;
 };
 
+export type ContractorContext = {
+  id: string;
+  email: string;
+  name: string;
+  phone: string;
+  company: ContractorCompany | null;
+};
+
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
 
-async function fetchJson<T>(path: string, fallback: T): Promise<T> {
+async function authedFetch(path: string, init?: RequestInit) {
+  const token = await getAccessToken();
+
+  return fetch(`${apiBaseUrl}${path}`, {
+    ...init,
+    cache: "no-store",
+    headers: {
+      ...(init?.headers ?? {}),
+      ...(token ? { Authorization: `Bearer ${token}` } : {})
+    }
+  });
+}
+
+async function authedFetchJson<T>(path: string, fallback: T): Promise<T> {
   try {
-    const response = await fetch(`${apiBaseUrl}${path}`, {
-      cache: "no-store"
-    });
+    const response = await authedFetch(path);
 
     if (!response.ok) {
       return fallback;
@@ -129,38 +150,37 @@ async function fetchJson<T>(path: string, fallback: T): Promise<T> {
   }
 }
 
-export async function getMyCompany(
-  companyId: string,
-): Promise<ContractorCompany | null> {
+/** 로그인한 업체 계정과 등록된 업체 프로필을 조회한다. */
+export async function getMyContext(): Promise<ContractorContext | null> {
   try {
-    const response = await fetch(
-      `${apiBaseUrl}/contractors/companies/${encodeURIComponent(companyId)}`,
-      { cache: "no-store" },
-    );
+    const response = await authedFetch("/contractors/me");
 
     if (!response.ok) {
       return null;
     }
 
-    return (await response.json()) as ContractorCompany;
+    return (await response.json()) as ContractorContext;
   } catch {
     return null;
   }
 }
 
 export function getContractorOpportunities(companyId: string) {
-  return fetchJson<ContractorOpportunity[]>(
+  return authedFetchJson<ContractorOpportunity[]>(
     `/contractors/${encodeURIComponent(companyId)}/opportunities`,
     []
   );
 }
 
 export function getContractorBids(companyId: string) {
-  return fetchJson<ContractorBidWithReport[]>(`/contractors/${encodeURIComponent(companyId)}/bids`, []);
+  return authedFetchJson<ContractorBidWithReport[]>(
+    `/contractors/${encodeURIComponent(companyId)}/bids`,
+    []
+  );
 }
 
 export function getContractorAssignments(companyId: string) {
-  return fetchJson<ContractorAssignment[]>(
+  return authedFetchJson<ContractorAssignment[]>(
     `/contractors/${encodeURIComponent(companyId)}/assignments`,
     []
   );

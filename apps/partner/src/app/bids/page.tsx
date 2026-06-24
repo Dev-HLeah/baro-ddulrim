@@ -10,12 +10,13 @@ import {
   getContractorBids,
   getContractorOpportunities,
 } from "@/lib/contractor-api";
-import { isApprovedCompany, loadMyCompany } from "@/lib/session";
+import { isApprovedCompany, loadMyContext } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
 
 export default async function ContractorBidsPage() {
-  const company = await loadMyCompany();
+  const context = await loadMyContext();
+  const company = context?.company ?? null;
 
   if (!company || !isApprovedCompany(company)) {
     redirect("/");

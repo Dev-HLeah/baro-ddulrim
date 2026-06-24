@@ -1,14 +1,20 @@
 import {
   Body,
   Controller,
+  ForbiddenException,
   Get,
   Param,
   Patch,
   Post,
   UploadedFiles,
+  UseGuards,
   UseInterceptors
 } from "@nestjs/common";
 import { FileFieldsInterceptor } from "@nestjs/platform-express";
+import { AdminGuard } from "../auth/admin.guard";
+import { CurrentAccount } from "../auth/auth.decorators";
+import type { AuthAccount } from "../auth/auth.types";
+import { ContractorGuard } from "../auth/contractor.guard";
 import { ContractorsService } from "./contractors.service";
 import { RegisterContractorDto } from "./dto/register-contractor.dto";
 import { SubmitBidDto } from "./dto/submit-bid.dto";
@@ -24,7 +30,14 @@ type UploadedContractorFiles = {
 export class ContractorsController {
   constructor(private readonly contractorsService: ContractorsService) {}
 
+  @Get("me")
+  @UseGuards(ContractorGuard)
+  async getMyContext(@CurrentAccount() account: AuthAccount) {
+    return this.contractorsService.getMyContext(account);
+  }
+
   @Post("register")
+  @UseGuards(ContractorGuard)
   @UseInterceptors(
     FileFieldsInterceptor(
       [
@@ -39,18 +52,21 @@ export class ContractorsController {
     )
   )
   async registerCompany(
+    @CurrentAccount() account: AuthAccount,
     @Body() dto: RegisterContractorDto,
     @UploadedFiles() files: UploadedContractorFiles
   ) {
-    return this.contractorsService.registerCompany(dto, files ?? {});
+    return this.contractorsService.registerCompany(account, dto, files ?? {});
   }
 
   @Get("admin/companies")
+  @UseGuards(AdminGuard)
   async findCompaniesForAdmin() {
     return this.contractorsService.findCompaniesForAdmin();
   }
 
   @Patch("admin/companies/:companyId/status")
+  @UseGuards(AdminGuard)
   async updateCompanyStatus(
     @Param("companyId") companyId: string,
     @Body() dto: UpdateContractorStatusDto
@@ -59,41 +75,78 @@ export class ContractorsController {
   }
 
   @Get("companies")
+  @UseGuards(AdminGuard)
   async findCompanies() {
     return this.contractorsService.findCompanies();
   }
 
   @Get("companies/:companyId")
-  async findCompanyProfile(@Param("companyId") companyId: string) {
+  @UseGuards(ContractorGuard)
+  async findCompanyProfile(
+    @CurrentAccount() account: AuthAccount,
+    @Param("companyId") companyId: string
+  ) {
+    this.assertOwnership(account, companyId);
     return this.contractorsService.findCompanyProfile(companyId);
   }
 
   @Get(":companyId/opportunities")
-  async findOpportunities(@Param("companyId") companyId: string) {
+  @UseGuards(ContractorGuard)
+  async findOpportunities(
+    @CurrentAccount() account: AuthAccount,
+    @Param("companyId") companyId: string
+  ) {
+    this.assertOwnership(account, companyId);
     return this.contractorsService.findOpportunities(companyId);
   }
 
   @Get(":companyId/bids")
-  async findBids(@Param("companyId") companyId: string) {
+  @UseGuards(ContractorGuard)
+  async findBids(
+    @CurrentAccount() account: AuthAccount,
+    @Param("companyId") companyId: string
+  ) {
+    this.assertOwnership(account, companyId);
     return this.contractorsService.findBids(companyId);
   }
 
   @Get(":companyId/assignments")
-  async findAssignments(@Param("companyId") companyId: string) {
+  @UseGuards(ContractorGuard)
+  async findAssignments(
+    @CurrentAccount() account: AuthAccount,
+    @Param("companyId") companyId: string
+  ) {
+    this.assertOwnership(account, companyId);
     return this.contractorsService.findAssignments(companyId);
   }
 
   @Post(":companyId/bids")
-  async submitBid(@Param("companyId") companyId: string, @Body() dto: SubmitBidDto) {
+  @UseGuards(ContractorGuard)
+  async submitBid(
+    @CurrentAccount() account: AuthAccount,
+    @Param("companyId") companyId: string,
+    @Body() dto: SubmitBidDto
+  ) {
+    this.assertOwnership(account, companyId);
     return this.contractorsService.submitBid(companyId, dto);
   }
 
   @Post(":companyId/assignments/:assignmentId/work-updates")
+  @UseGuards(ContractorGuard)
   async submitWorkUpdate(
+    @CurrentAccount() account: AuthAccount,
     @Param("companyId") companyId: string,
     @Param("assignmentId") assignmentId: string,
     @Body() dto: SubmitWorkUpdateDto
   ) {
+    this.assertOwnership(account, companyId);
     return this.contractorsService.submitWorkUpdate(companyId, assignmentId, dto);
+  }
+
+  /** 로그인한 업체 계정이 해당 업체(companyId)의 소유자인지 확인한다. */
+  private assertOwnership(account: AuthAccount, companyId: string) {
+    if (account.companyId !== companyId) {
+      throw new ForbiddenException("해당 업체에 접근할 수 없습니다.");
+    }
   }
 }

@@ -1,25 +1,15 @@
-import { cookies } from "next/headers";
-import { getMyCompany, type ContractorCompany } from "@/lib/contractor-api";
-
-export const PARTNER_COMPANY_COOKIE = "partner_company_id";
-
-export async function getMyCompanyId(): Promise<string | null> {
-  const store = await cookies();
-  return store.get(PARTNER_COMPANY_COOKIE)?.value ?? null;
-}
+import {
+  getMyContext,
+  type ContractorCompany,
+  type ContractorContext
+} from "@/lib/contractor-api";
 
 /**
- * 쿠키에 저장된 "내 업체" id로 업체를 조회한다.
- * 등록 전(쿠키 없음)이거나 업체가 삭제된 경우 null.
+ * 로그인한 업체의 계정/업체 컨텍스트를 불러온다.
+ * 미들웨어가 세션을 보장하므로, 여기서는 백엔드에서 계정·업체 정보를 가져온다.
  */
-export async function loadMyCompany(): Promise<ContractorCompany | null> {
-  const companyId = await getMyCompanyId();
-
-  if (!companyId) {
-    return null;
-  }
-
-  return getMyCompany(companyId);
+export async function loadMyContext(): Promise<ContractorContext | null> {
+  return getMyContext();
 }
 
 export function isApprovedCompany(company: ContractorCompany): boolean {

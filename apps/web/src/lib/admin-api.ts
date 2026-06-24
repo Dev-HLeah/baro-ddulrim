@@ -1,3 +1,5 @@
+import { getAccessToken } from "@/lib/supabase/server";
+
 export type DashboardSummary = {
   totalReports: number;
   adminReviewCount: number;
@@ -189,8 +191,10 @@ const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:400
 
 async function fetchJson<T>(path: string, fallback: T): Promise<T> {
   try {
+    const token = await getAccessToken();
     const response = await fetch(`${apiBaseUrl}${path}`, {
-      cache: "no-store"
+      cache: "no-store",
+      headers: token ? { Authorization: `Bearer ${token}` } : {}
     });
 
     if (!response.ok) {

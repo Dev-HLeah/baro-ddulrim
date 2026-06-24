@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { getAccessToken } from "@/lib/supabase/server";
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
 
@@ -17,10 +18,12 @@ function textValue(formData: FormData, key: string) {
 }
 
 export async function updateSettingAction(key: string, formData: FormData) {
+  const token = await getAccessToken();
   const response = await fetch(`${apiBaseUrl}/settings/${encodeURIComponent(key)}`, {
     method: "PATCH",
     headers: {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {})
     },
     body: JSON.stringify({
       value: textValue(formData, "value")

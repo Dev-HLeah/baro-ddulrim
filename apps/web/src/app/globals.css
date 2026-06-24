@@ -1651,3 +1651,40 @@ a.primary-button {
     gap: 4px;
   }
 }
+
+/* 관리자 로그인 화면 */
+.auth-shell {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: #f8fafc;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 32px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+}
+
+.admin-logout {
+  margin-top: auto;
+  padding-top: 16px;
+}
+
+.admin-logout .secondary-button {
+  width: 100%;
+}
+
+.form-error {
+  margin: 0;
+  color: #dc2626;
+  font-size: 14px;
+}

@@ -1,12 +1,19 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { PARTNER_COMPANY_COOKIE } from "@/lib/session";
+import {
+  createSupabaseServerClient,
+  getAccessToken
+} from "@/lib/supabase/server";
 
 const apiBaseUrl =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
+
+async function authHeader(): Promise<Record<string, string>> {
+  const token = await getAccessToken();
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
 
 function textValue(formData: FormData, key: string) {
   const value = formData.get(key);
@@ -41,6 +48,7 @@ export async function submitContractorBidAction(
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        ...(await authHeader()),
       },
       body: JSON.stringify({
         reportId,
@@ -107,6 +115,7 @@ export async function registerContractorAction(formData: FormData) {
 
   const response = await fetch(`${apiBaseUrl}/contractors/register`, {
     method: "POST",
+    headers: await authHeader(),
     body: apiFormData,
   });
 
@@ -115,21 +124,15 @@ export async function registerContractorAction(formData: FormData) {
     throw new Error(message || "업체 등록 신청을 처리하지 못했습니다.");
   }
 
-  const company = (await response.json()) as { id?: string };
-
-  if (company?.id) {
-    const store = await cookies();
-    store.set(PARTNER_COMPANY_COOKIE, company.id, {
-      httpOnly: true,
-      sameSite: "lax",
-      path: "/",
-      maxAge: 60 * 60 * 24 * 365,
-    });
-  }
-
   revalidatePath("/");
   revalidatePath("/register");
   redirect("/");
+}
+
+export async function logoutAction() {
+  const supabase = await createSupabaseServerClient();
+  await supabase.auth.signOut();
+  redirect("/login");
 }
 
 export async function submitWorkUpdateAction(
@@ -145,6 +148,7 @@ export async function submitWorkUpdateAction(
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        ...(await authHeader()),
       },
       body: JSON.stringify({
         status: textValue(formData, "status"),

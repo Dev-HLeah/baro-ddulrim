@@ -1654,3 +1654,38 @@ a.primary-button {
     gap: 4px;
   }
 }
+
+/* 인증(로그인/회원가입) 화면 */
+.workspace-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.auth-page {
+  max-width: 480px;
+}
+
+.auth-switch {
+  margin-top: 16px;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.auth-switch a {
+  color: #1e9bd7;
+  font-weight: 600;
+}
+
+.form-error {
+  margin: 0;
+  color: #dc2626;
+  font-size: 14px;
+}
+
+.form-info {
+  margin: 0;
+  color: #0f766e;
+  font-size: 14px;
+}
