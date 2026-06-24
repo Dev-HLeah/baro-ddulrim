@@ -28,10 +28,7 @@ export default async function ContractorRegisterPage() {
         </form>
       </header>
 
-      <ContractorRegistrationForm
-        defaultName={context?.name ?? ""}
-        defaultPhone={context?.phone ?? ""}
-      />
+      <ContractorRegistrationForm />
 
       <div className="action-row split-actions">
         <Link className="secondary-button" href="/">

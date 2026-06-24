@@ -8,10 +8,9 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 export default function ContractorSignupPage() {
   const router = useRouter();
-  const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [sentTo, setSentTo] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -27,12 +26,17 @@ export default function ContractorSignupPage() {
       return;
     }
 
+    if (password !== confirm) {
+      setError("비밀번호가 일치하지 않습니다.");
+      setLoading(false);
+      return;
+    }
+
     const supabase = createSupabaseBrowserClient();
     const { data, error: signUpError } = await supabase.auth.signUp({
       email: email.trim(),
       password,
       options: {
-        data: { name: name.trim(), phone: phone.trim() },
         emailRedirectTo: `${window.location.origin}/auth/callback?next=/register`
       }
     });
@@ -80,7 +84,9 @@ export default function ContractorSignupPage() {
   return (
     <div className="auth-body">
       <h1 className="auth-title">업체 회원가입</h1>
-      <p className="auth-subtitle">간단히 가입하고 업체 등록을 시작하세요.</p>
+      <p className="auth-subtitle">
+        이메일과 비밀번호로 가입하세요. 업체 정보는 다음 단계에서 입력합니다.
+      </p>
 
       <AuthOAuthButtons next="/register" />
 
@@ -89,29 +95,6 @@ export default function ContractorSignupPage() {
       </div>
 
       <form className="admin-form" onSubmit={onSubmit}>
-        <div className="form-grid">
-          <label className="form-field">
-            <span>담당자 이름</span>
-            <input
-              name="name"
-              onChange={(event) => setName(event.target.value)}
-              placeholder="홍길동"
-              required
-              value={name}
-            />
-          </label>
-          <label className="form-field">
-            <span>연락처</span>
-            <input
-              name="phone"
-              onChange={(event) => setPhone(event.target.value)}
-              placeholder="010-0000-0000"
-              required
-              type="tel"
-              value={phone}
-            />
-          </label>
-        </div>
         <label className="form-field">
           <span>이메일</span>
           <input
@@ -134,6 +117,18 @@ export default function ContractorSignupPage() {
             required
             type="password"
             value={password}
+          />
+        </label>
+        <label className="form-field">
+          <span>비밀번호 확인</span>
+          <input
+            autoComplete="new-password"
+            name="confirm"
+            onChange={(event) => setConfirm(event.target.value)}
+            placeholder="비밀번호 확인"
+            required
+            type="password"
+            value={confirm}
           />
         </label>
         {error ? <p className="form-error">{error}</p> : null}
