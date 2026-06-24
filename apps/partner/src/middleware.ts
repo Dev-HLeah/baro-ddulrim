@@ -4,7 +4,16 @@ import { NextResponse, type NextRequest } from "next/server";
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
 
-const authPaths = ["/login", "/signup"];
+// 로그인 없이 접근 가능한 경로
+const publicPaths = [
+  "/login",
+  "/signup",
+  "/forgot-password",
+  "/reset-password",
+  "/auth/callback"
+];
+// 이미 로그인했다면 작업대로 보낼 경로
+const redirectIfAuthed = ["/login", "/signup"];
 
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request });
@@ -31,15 +40,15 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const path = request.nextUrl.pathname;
-  const isAuthPage = authPaths.includes(path);
+  const isPublic = publicPaths.includes(path);
 
   // 비로그인 진입은 회원가입을 기본 화면으로 보여준다(신규 업체 온보딩 우선).
-  if (!user && !isAuthPage) {
+  if (!user && !isPublic) {
     const signupUrl = new URL("/signup", request.url);
     return NextResponse.redirect(signupUrl);
   }
 
-  if (user && isAuthPage) {
+  if (user && redirectIfAuthed.includes(path)) {
     const homeUrl = new URL("/", request.url);
     return NextResponse.redirect(homeUrl);
   }

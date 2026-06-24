@@ -1689,3 +1689,161 @@ a.primary-button {
   color: #0f766e;
   font-size: 14px;
 }
+
+/* 풀페이지 인증 화면 */
+.auth-shell {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 20px;
+  background: #f1f6fb;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 36px 32px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+}
+
+.auth-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+}
+
+.auth-brand-mark {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: #1e9bd7;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.auth-brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.3;
+}
+
+.auth-brand-text strong {
+  color: #1f2937;
+  font-size: 16px;
+}
+
+.auth-brand-text small {
+  color: #6b7280;
+  font-size: 12px;
+}
+
+.auth-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.auth-title {
+  margin: 4px 0 0;
+  font-size: 22px;
+  color: #1f2937;
+}
+
+.auth-subtitle {
+  margin: 0;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.oauth-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.oauth-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.oauth-button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.oauth-mark {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.oauth-kakao {
+  background: #fee500;
+  color: #191600;
+}
+
+.oauth-kakao .oauth-mark {
+  background: #191600;
+  color: #fee500;
+}
+
+.oauth-google {
+  background: #ffffff;
+  color: #1f2937;
+  border-color: #dadce0;
+}
+
+.oauth-mark-google {
+  background: #f1f3f4;
+  color: #4285f4;
+}
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #9ca3af;
+  font-size: 12px;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: #e5e7eb;
+}
+
+.auth-links {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.auth-links a {
+  color: #1e9bd7;
+  font-weight: 600;
+}
