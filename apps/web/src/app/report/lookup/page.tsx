@@ -36,7 +36,6 @@ export default async function ReportLookupPage({
     <main className="shell">
       <section className="customer-panel" aria-labelledby="lookup-title">
         <div className="brand-row">
-          <div className="brand-mark">바</div>
           <div>
             <p className="eyebrow">바로 뚫림</p>
             <h1 id="lookup-title">내 신고 확인</h1>

@@ -45,7 +45,9 @@ export default function ContractorSignupPage() {
       setError(
         signUpError.message.toLowerCase().includes("registered")
           ? "이미 가입된 이메일입니다."
-          : "회원가입에 실패했습니다. 잠시 후 다시 시도해 주세요."
+          : signUpError.message.toLowerCase().includes("rate limit")
+            ? "이메일 발송 횟수가 초과되었습니다. 잠시 후 다시 시도해주세요."
+            : "회원가입에 실패했습니다. 잠시 후 다시 시도해 주세요."
       );
       setLoading(false);
       return;

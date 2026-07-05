@@ -1,7 +1,7 @@
 "use client";
 
 import { MapPin, Search, X } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type LocationCandidate = {
   id: string;
@@ -38,6 +38,18 @@ export function LocationSearchInput() {
       .filter(Boolean)
       .join(" · ");
   }, [selected]);
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.classList.add("scroll-locked");
+    } else {
+      document.body.classList.remove("scroll-locked");
+    }
+
+    return () => {
+      document.body.classList.remove("scroll-locked");
+    };
+  }, [isOpen]);
 
   async function searchLocations() {
     const cleanQuery = query.trim();

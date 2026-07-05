@@ -1,5 +1,7 @@
 import { redirect } from "next/navigation";
+import Image from "next/image";
 import { logoutAction } from "@/app/actions";
+import { SubmitButton } from "@/components/submit-button";
 import {
   ContractorNavigationPanel,
   ContractorRejectedScreen,
@@ -28,14 +30,17 @@ export default async function ContractorPage() {
   return (
     <main className="workspace-page contractor-page">
       <header className="workspace-header">
-        <div>
-          <p className="eyebrow">업체</p>
-          <h1>업체 작업대</h1>
+        <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+          <Image src="/character.png" alt="바로뚫림 캐릭터" width={48} height={48} style={{ objectFit: 'contain' }} priority />
+          <div>
+            <p className="eyebrow" style={{ margin: 0, marginBottom: '4px' }}>바로 뚫림 · 업체</p>
+            <h1 style={{ margin: 0 }}>업체 작업대</h1>
+          </div>
         </div>
         <form action={logoutAction}>
-          <button className="secondary-button" type="submit">
+          <SubmitButton className="secondary-button" type="submit">
             로그아웃
-          </button>
+          </SubmitButton>
         </form>
       </header>
 

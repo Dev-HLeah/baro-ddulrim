@@ -17,7 +17,6 @@ export function AdminShell({ children }: { children: ReactNode }) {
       <aside className="admin-sidebar" aria-label="관리자 메뉴">
         <div>
           <div className="brand-row">
-            <div className="brand-mark">바</div>
             <div>
               <p className="eyebrow">바로 뚫림</p>
               <strong>관리자</strong>

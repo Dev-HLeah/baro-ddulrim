@@ -198,6 +198,10 @@ h2 {
   line-height: 1.5;
 }
 
+body.scroll-locked {
+  overflow: hidden;
+}
+
 .modal-backdrop {
   position: fixed;
   inset: 0;
@@ -206,6 +210,7 @@ h2 {
   place-items: center;
   padding: 24px;
   background: rgba(15, 23, 42, 0.28);
+  overflow-y: auto;
 }
 
 .location-modal {
@@ -1687,4 +1692,38 @@ a.primary-button {
   margin: 0;
   color: #dc2626;
   font-size: 14px;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.spinner {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.75s linear infinite;
+  vertical-align: middle;
+  margin-right: 8px;
+}
+
+.loading-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  gap: 16px;
+  background: var(--color-bg);
+}
+
+.loading-screen .spinner {
+  width: 2em;
+  height: 2em;
+  color: var(--color-primary);
+  margin-right: 0;
 }

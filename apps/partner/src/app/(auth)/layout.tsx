@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { ReactNode } from "react";
 
 export default function AuthLayout({ children }: { children: ReactNode }) {
@@ -6,7 +7,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
     <main className="auth-shell">
       <div className="auth-card">
         <Link className="auth-brand" href="/">
-          <span className="auth-brand-mark">바</span>
+          <Image src="/character.png" alt="바로뚫림 로고" width={48} height={48} style={{ objectFit: 'contain' }} priority />
           <span className="auth-brand-text">
             <strong>바로 뚫림</strong>
             <small>업체 파트너</small>

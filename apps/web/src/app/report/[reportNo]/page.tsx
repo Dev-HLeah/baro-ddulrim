@@ -24,7 +24,6 @@ export default async function CustomerReportDetailPage({
         aria-labelledby="customer-report-title"
       >
         <div className="brand-row">
-          <div className="brand-mark">바</div>
           <div>
             <p className="eyebrow">{reportNo}</p>
             <h1 id="customer-report-title">신고 상세</h1>

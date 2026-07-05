@@ -3,13 +3,15 @@ import { ArrowRight, FileSearch, Phone } from "lucide-react";
 import { createCustomerReportAction } from "@/app/actions";
 import { LocationSearchInput } from "@/components/location-search-input";
 import { ReportPhotoUploader } from "@/components/report-photo-uploader";
+import { SubmitButton } from "@/components/submit-button";
+import Image from "next/image";
 
 export default function NewReportPage() {
   return (
     <main className="shell">
       <section className="customer-panel" aria-labelledby="report-title">
         <div className="brand-row">
-          <div className="brand-mark">바</div>
+          <Image src="/character.png" alt="바로뚫림 캐릭터" width={56} height={56} style={{ objectFit: 'contain' }} priority />
           <div>
             <p className="eyebrow">바로 뚫림</p>
             <h1 id="report-title">배수 문제 신고</h1>
@@ -52,10 +54,10 @@ export default function NewReportPage() {
 
           <ReportPhotoUploader />
 
-          <button className="primary-button" type="submit">
+          <SubmitButton className="primary-button" type="submit">
             신고 접수 시작
             <ArrowRight aria-hidden="true" size={18} />
-          </button>
+          </SubmitButton>
         </form>
       </section>
 
