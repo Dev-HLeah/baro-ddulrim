@@ -116,7 +116,16 @@ export default async function ReportLookupPage({
 
         <div className="customer-results">
           {reports.map((report) => (
-            <CustomerReportCard key={report.id} report={report} />
+            <CustomerReportCard
+              key={report.id}
+              phoneHint={params.lookupPhone}
+              replyRedirectTo={
+                params.lookupPhone
+                  ? `/report/lookup?lookupPhone=${encodeURIComponent(params.lookupPhone)}`
+                  : "/report/lookup"
+              }
+              report={report}
+            />
           ))}
           {hasSearched && reports.length === 0 ? (
             <p className="empty-text">조회된 신고가 없습니다.</p>

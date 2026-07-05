@@ -3,10 +3,10 @@ import { toIso } from "../common/format";
 import { PrismaService } from "../prisma/prisma.service";
 import { UpdateSettingDto } from "./dto/update-setting.dto";
 
+// 실제 동작에 연결된 설정만 노출한다. (조회 보안 모드는 공개 노선 확정으로 제거)
 const allowedSettings: Record<string, string[]> = {
   ai_provider: ["openai", "gemini"],
-  map_provider: ["kakao", "naver"],
-  customer_lookup_mode: ["development_phone_only", "verification_required"]
+  map_provider: ["kakao", "naver"]
 };
 
 @Injectable()

@@ -109,6 +109,7 @@ export type ContractorAssignment = {
     status: string;
     note: string | null;
     finalPrice: number | null;
+    photoUrls: string[];
     createdAt: string | null;
   }>;
 };

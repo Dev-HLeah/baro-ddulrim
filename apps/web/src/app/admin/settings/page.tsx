@@ -23,15 +23,6 @@ const settingDefinitions = [
       { label: "Kakao", value: "kakao" },
       { label: "Naver", value: "naver" }
     ]
-  },
-  {
-    key: "customer_lookup_mode",
-    title: "고객 조회 방식",
-    description: "개발 중에는 연락처 조회를 허용하고, 운영에서는 접수번호와 확인번호를 요구합니다.",
-    options: [
-      { label: "개발: 연락처 허용", value: "development_phone_only" },
-      { label: "운영: 접수번호 확인번호", value: "verification_required" }
-    ]
   }
 ];
 

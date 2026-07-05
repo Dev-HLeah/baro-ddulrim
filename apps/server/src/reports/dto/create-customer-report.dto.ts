@@ -1,10 +1,16 @@
 import { Type } from "class-transformer";
-import { IsNumber, IsOptional, IsString, MaxLength } from "class-validator";
+import { IsEnum, IsNumber, IsOptional, IsString, MaxLength } from "class-validator";
+import { Urgency } from "../../generated/prisma/client";
 
 export class CreateCustomerReportDto {
   @IsString()
   @MaxLength(40)
   phone!: string;
+
+  // 고객이 직접 고른 긴급도. 입력 시 AI/규칙 추론보다 우선한다.
+  @IsOptional()
+  @IsEnum(Urgency)
+  urgency?: Urgency | null;
 
   @IsString()
   @MaxLength(200)

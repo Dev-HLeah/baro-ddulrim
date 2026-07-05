@@ -67,6 +67,60 @@ export default async function AdminPage() {
         </article>
       </section>
 
+      <section className="detail-grid">
+        <article className="panel-section">
+          <h2>유형별 신고</h2>
+          <div className="stat-bar-list">
+            {Object.entries(summary.issueTypeCounts)
+              .sort(([, a], [, b]) => b - a)
+              .map(([issueType, count]) => (
+                <div className="stat-bar-row" key={issueType}>
+                  <span>{labelOf(issueTypeLabels, issueType)}</span>
+                  <strong>{count}건</strong>
+                </div>
+              ))}
+            {Object.keys(summary.issueTypeCounts).length === 0 ? (
+              <p className="empty-text">데이터가 없습니다.</p>
+            ) : null}
+          </div>
+        </article>
+
+        <article className="panel-section">
+          <h2>지역별 신고</h2>
+          <div className="stat-bar-list">
+            {Object.entries(summary.regionCounts)
+              .sort(([, a], [, b]) => b - a)
+              .slice(0, 8)
+              .map(([region, count]) => (
+                <div className="stat-bar-row" key={region}>
+                  <span>{region}</span>
+                  <strong>{count}건</strong>
+                </div>
+              ))}
+            {Object.keys(summary.regionCounts).length === 0 ? (
+              <p className="empty-text">데이터가 없습니다.</p>
+            ) : null}
+          </div>
+        </article>
+
+        <article className="panel-section">
+          <h2>업체별 실적</h2>
+          <div className="stat-bar-list">
+            {summary.contractorStats.map((stats) => (
+              <div className="stat-bar-row" key={stats.companyId}>
+                <span>{stats.companyName}</span>
+                <strong>
+                  배정 {stats.assignedCount} · 완료 {stats.resolvedCount}
+                </strong>
+              </div>
+            ))}
+            {summary.contractorStats.length === 0 ? (
+              <p className="empty-text">배정 실적이 없습니다.</p>
+            ) : null}
+          </div>
+        </article>
+      </section>
+
       <section className="panel-section">
         <div className="section-header">
           <div>

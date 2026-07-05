@@ -1,5 +1,25 @@
-import { BadRequestException, Controller, Get, NotFoundException, Query } from "@nestjs/common";
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  NotFoundException,
+  Param,
+  Post,
+  Query
+} from "@nestjs/common";
+import { IsString, MaxLength } from "class-validator";
 import { CustomersService } from "./customers.service";
+
+class CreateCustomerReplyDto {
+  @IsString()
+  @MaxLength(40)
+  phone!: string;
+
+  @IsString()
+  @MaxLength(2000)
+  content!: string;
+}
 
 @Controller("customers")
 export class CustomersController {
@@ -30,5 +50,13 @@ export class CustomersController {
     }
 
     return report;
+  }
+
+  @Post("reports/:reportNo/messages")
+  async addCustomerReply(
+    @Param("reportNo") reportNo: string,
+    @Body() dto: CreateCustomerReplyDto
+  ) {
+    return this.customersService.addCustomerReply(reportNo, dto.phone, dto.content);
   }
 }

@@ -114,15 +114,6 @@ async function seedSettings() {
   });
 
   await prisma.appSetting.upsert({
-    where: { key: "customer_lookup_mode" },
-    update: {},
-    create: {
-      key: "customer_lookup_mode",
-      value: process.env.CUSTOMER_LOOKUP_MODE || "development_phone_only"
-    }
-  });
-
-  await prisma.appSetting.upsert({
     where: { key: "map_provider" },
     update: {},
     create: {

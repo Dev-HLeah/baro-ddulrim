@@ -14,11 +14,8 @@ export default async function MapPage() {
         <div className="map-toolbar">
           <div>
             <p className="eyebrow">지도 현황</p>
-            <h1>신고 위치</h1>
+            <h1>우리 동네 배수 신고 현황</h1>
           </div>
-          <span className="status-badge">
-            {provider === "kakao" ? "Kakao Provider" : "Fallback Provider"}
-          </span>
         </div>
         <ReportMap
           kakaoJavascriptKey={kakaoJavascriptKey}

@@ -1881,3 +1881,162 @@ a.primary-button {
   color: var(--color-primary);
   margin-right: 0;
 }
+
+/* ==========================================================
+   디자인 리뉴얼 v2 — 컨셉2 골조 + 컨셉1 진한 구획선 (업체 앱)
+   ========================================================== */
+:root {
+  --bd-primary: #1387c4;
+  --bd-primary-dark: #0b3d5c;
+  --bd-ink: #17222e;
+  --bd-line-strong: #26374b;
+  --bd-line-soft: #c9dcea;
+  --bd-page: #eaf3fa;
+  --bd-green: #15803d;
+  --bd-amber: #d97706;
+  --bd-red: #dc2626;
+}
+
+body {
+  background: var(--bd-page);
+  color: var(--bd-ink);
+  font-size: 16px;
+}
+
+.panel-section,
+.opportunity-card,
+.assignment-work-card,
+.status-gate {
+  background: #ffffff;
+  border: 1px solid var(--bd-line-soft);
+  border-left: 6px solid var(--bd-primary);
+  border-radius: 0 10px 10px 0;
+}
+
+.metric {
+  background: #ffffff;
+  border: 1px solid var(--bd-line-soft);
+  border-radius: 10px;
+}
+
+.metric strong {
+  font-size: 26px;
+  color: var(--bd-ink);
+}
+
+.primary-button {
+  min-height: 50px;
+  padding: 0 22px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 10px;
+  background: var(--bd-primary);
+  color: #ffffff;
+  border: none;
+}
+
+.secondary-button {
+  min-height: 44px;
+  font-size: 15px;
+  font-weight: 600;
+  border-radius: 10px;
+  border: 2px solid var(--bd-primary);
+  color: var(--bd-primary);
+  background: #ffffff;
+}
+
+.admin-form input,
+.admin-form select,
+.admin-form textarea {
+  border: 2px solid var(--bd-line-strong);
+  border-radius: 8px;
+  font-size: 16px;
+  color: var(--bd-ink);
+  background: #ffffff;
+}
+
+.admin-form .form-field > span {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--bd-ink);
+}
+
+.data-table th {
+  font-size: 14px;
+  color: #41546a;
+  background: #eef3f8;
+  border-bottom: 2px solid var(--bd-line-strong);
+}
+
+.data-table td {
+  font-size: 15px;
+  border-bottom: 1px solid #dde6ee;
+}
+
+.status-badge {
+  font-size: 13px;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 8px;
+  background: #e8f2fa;
+  color: #0b5c8c;
+  border: 1.5px solid var(--bd-primary);
+}
+
+.urgency-badge {
+  font-size: 13px;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 8px;
+}
+
+.urgency-badge.emergency {
+  background: var(--bd-red);
+  color: #ffffff;
+}
+
+.urgency-badge.urgent {
+  background: var(--bd-amber);
+  color: #ffffff;
+}
+
+.urgency-badge.normal {
+  background: #e8f2fa;
+  color: #0b5c8c;
+}
+
+.bid-inline-status {
+  border: 2px solid var(--bd-primary);
+  border-radius: 10px;
+  background: #e8f2fa;
+}
+
+.bid-inline-status strong {
+  font-size: 20px;
+  color: var(--bd-primary-dark);
+}
+
+.work-photo-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.work-photo-grid img {
+  width: 84px;
+  height: 84px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 2px solid var(--bd-line-strong);
+}
+
+.auth-card {
+  border: 1px solid var(--bd-line-soft);
+  border-top: 6px solid var(--bd-primary);
+  border-radius: 12px;
+}
+
+.oauth-button {
+  min-height: 50px;
+}

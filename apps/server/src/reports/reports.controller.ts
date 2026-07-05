@@ -12,8 +12,15 @@ import {
 } from "@nestjs/common";
 import { FilesInterceptor } from "@nestjs/platform-express";
 import { AdminGuard } from "../auth/admin.guard";
+import { CurrentAdmin } from "../auth/auth.decorators";
+import type { AuthAdmin } from "../auth/auth.types";
 import { CreateCustomerReportDto } from "./dto/create-customer-report.dto";
-import { ApproveReportDto, AssignReportDto, UpdateReportDto } from "./dto/report-actions.dto";
+import {
+  ApproveReportDto,
+  AssignReportDto,
+  SendAdminMessageDto,
+  UpdateReportDto
+} from "./dto/report-actions.dto";
 import { ReportsService } from "./reports.service";
 
 type UploadedReportFile = {
@@ -66,6 +73,16 @@ export class ReportsController {
     return this.reportsService.update(id, dto);
   }
 
+  @Post(":id/messages")
+  @UseGuards(AdminGuard)
+  async sendAdminMessage(
+    @CurrentAdmin() admin: AuthAdmin,
+    @Param("id") id: string,
+    @Body() dto: SendAdminMessageDto
+  ) {
+    return this.reportsService.sendAdminMessage(id, dto, admin.id);
+  }
+
   @Post(":id/approve")
   @UseGuards(AdminGuard)
   async approveForBidding(@Param("id") id: string, @Body() dto: ApproveReportDto) {
@@ -74,7 +91,11 @@ export class ReportsController {
 
   @Post(":id/assign")
   @UseGuards(AdminGuard)
-  async assignContractor(@Param("id") id: string, @Body() dto: AssignReportDto) {
-    return this.reportsService.assignContractor(id, dto);
+  async assignContractor(
+    @CurrentAdmin() admin: AuthAdmin,
+    @Param("id") id: string,
+    @Body() dto: AssignReportDto
+  ) {
+    return this.reportsService.assignContractor(id, dto, admin.id);
   }
 }

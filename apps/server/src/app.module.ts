@@ -1,5 +1,6 @@
 import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
+import { AiModule } from "./ai/ai.module";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
 import { AuthModule } from "./auth/auth.module";
@@ -21,6 +22,7 @@ import { SettingsModule } from "./settings/settings.module";
     }),
     PrismaModule,
     AuthModule,
+    AiModule,
     NotificationsModule,
     DashboardModule,
     ContractorsModule,

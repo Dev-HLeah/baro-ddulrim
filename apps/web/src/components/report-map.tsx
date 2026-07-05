@@ -182,6 +182,27 @@ function fallbackPosition(
   };
 }
 
+const statusFilterOptions = [
+  { value: "ALL", label: "전체 상태" },
+  { value: "OPEN", label: "진행 중" },
+  { value: "RESOLVED", label: "해결 완료" },
+] as const;
+
+const dateFilterOptions = [
+  { value: "ALL", label: "전체 기간" },
+  { value: "7", label: "최근 7일" },
+  { value: "30", label: "최근 30일" },
+] as const;
+
+const issueFilterOptions = [
+  "FLOOD",
+  "DRAIN",
+  "SEWER_BACKFLOW",
+  "ODOR",
+  "EMERGENCY",
+  "OTHER",
+] as const;
+
 export function ReportMap({
   markers,
   provider,
@@ -191,15 +212,46 @@ export function ReportMap({
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [isKakaoLoading, setIsKakaoLoading] = useState(false);
   const [kakaoLoadError, setKakaoLoadError] = useState<string | null>(null);
-  const validMarkers = useMemo(
-    () =>
-      markers.filter(
-        (marker) =>
-          typeof marker.latitude === "number" &&
-          typeof marker.longitude === "number",
-      ),
-    [markers],
-  );
+  const [issueFilter, setIssueFilter] = useState("ALL");
+  const [statusFilter, setStatusFilter] = useState("ALL");
+  const [dateFilter, setDateFilter] = useState("ALL");
+  const validMarkers = useMemo(() => {
+    const dateLimit =
+      dateFilter === "ALL"
+        ? null
+        : Date.now() - Number(dateFilter) * 24 * 60 * 60 * 1000;
+
+    return markers.filter((marker) => {
+      if (
+        typeof marker.latitude !== "number" ||
+        typeof marker.longitude !== "number"
+      ) {
+        return false;
+      }
+
+      if (issueFilter !== "ALL" && marker.issueType !== issueFilter) {
+        return false;
+      }
+
+      if (statusFilter === "RESOLVED" && marker.status !== "RESOLVED") {
+        return false;
+      }
+
+      if (statusFilter === "OPEN" && marker.status === "RESOLVED") {
+        return false;
+      }
+
+      if (dateLimit !== null) {
+        const createdAt = marker.createdAt ? Date.parse(marker.createdAt) : NaN;
+
+        if (Number.isNaN(createdAt) || createdAt < dateLimit) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }, [dateFilter, issueFilter, markers, statusFilter]);
   const fallbackBounds = useMemo(
     () => computeFallbackBounds(validMarkers),
     [validMarkers],
@@ -350,6 +402,49 @@ export function ReportMap({
 
   return (
     <div className="report-map-layout">
+      <div className="map-filter-bar" role="group" aria-label="지도 필터">
+        <select
+          aria-label="문제 유형 필터"
+          onChange={(event) => setIssueFilter(event.target.value)}
+          value={issueFilter}
+        >
+          <option value="ALL">전체 유형</option>
+          {issueFilterOptions.map((issueType) => (
+            <option key={issueType} value={issueType}>
+              {labelOf(issueTypeLabels, issueType)}
+            </option>
+          ))}
+        </select>
+        <select
+          aria-label="처리 상태 필터"
+          onChange={(event) => setStatusFilter(event.target.value)}
+          value={statusFilter}
+        >
+          {statusFilterOptions.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+        <select
+          aria-label="기간 필터"
+          onChange={(event) => setDateFilter(event.target.value)}
+          value={dateFilter}
+        >
+          {dateFilterOptions.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+        <span className="map-filter-count">{validMarkers.length}건 표시</span>
+        <div className="map-legend" aria-label="마커 범례">
+          <span className="map-legend-item emergency">긴급</span>
+          <span className="map-legend-item urgent">급함</span>
+          <span className="map-legend-item normal">일반</span>
+          <span className="map-legend-item resolved">완료</span>
+        </div>
+      </div>
       <div className="report-map-canvas" aria-label="신고 위치 마커">
         {shouldUseKakao && !kakaoLoadError ? (
           <div className="kakao-map-container" ref={mapRef} />

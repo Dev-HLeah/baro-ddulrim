@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { FileSearch, KeyRound } from "lucide-react";
+import { CheckCircle2, FileSearch, KeyRound } from "lucide-react";
+import { CopyButton } from "@/components/copy-button";
 import { CustomerReportCard } from "@/components/customer-report-card";
 import { getCustomerReportByVerification } from "@/lib/customer-api";
 
@@ -8,14 +9,17 @@ export default async function CustomerReportDetailPage({
   searchParams,
 }: {
   params: Promise<{ reportNo: string }>;
-  searchParams: Promise<{ verificationCode?: string }>;
+  searchParams: Promise<{ verificationCode?: string; created?: string }>;
 }) {
   const { reportNo } = await params;
-  const { verificationCode } = await searchParams;
+  const { verificationCode, created } = await searchParams;
   const report = await getCustomerReportByVerification(
     reportNo,
     verificationCode,
   );
+  const detailPath = `/report/${encodeURIComponent(reportNo)}?verificationCode=${encodeURIComponent(
+    verificationCode ?? "",
+  )}`;
 
   return (
     <main className="shell customer-detail-shell">
@@ -39,8 +43,35 @@ export default async function CustomerReportDetailPage({
           </Link>
         </div>
 
+        {report && created === "1" ? (
+          <div className="report-created-panel">
+            <div className="report-created-head">
+              <CheckCircle2 aria-hidden="true" size={28} />
+              <h2>신고가 접수되었습니다</h2>
+            </div>
+            <p>
+              아래 번호로 진행 상황을 확인할 수 있습니다. 문자나 전화로도 안내해
+              드리니, 번호를 꼭 보관해 주세요.
+            </p>
+            <div className="report-created-codes">
+              <div>
+                <span>접수번호</span>
+                <strong>{report.reportNo}</strong>
+              </div>
+              <div>
+                <span>확인번호</span>
+                <strong>{verificationCode}</strong>
+              </div>
+            </div>
+            <CopyButton
+              label="접수번호·확인번호 복사"
+              value={`바로 뚫림 접수번호 ${report.reportNo} / 확인번호 ${verificationCode}`}
+            />
+          </div>
+        ) : null}
+
         {report ? (
-          <CustomerReportCard report={report} />
+          <CustomerReportCard replyRedirectTo={detailPath} report={report} />
         ) : (
           <form className="lookup-form verification-panel">
             <label htmlFor="verificationCode">확인번호</label>

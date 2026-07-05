@@ -11,7 +11,6 @@ import { extname } from "node:path";
 import { toIso, toNumber } from "../common/format";
 import {
   ActorType,
-  AiProvider,
   BidStatus,
   IssueType,
   LocationConfirmedBy,
@@ -24,12 +23,14 @@ import {
   TemplateChannel,
   Urgency,
 } from "../generated/prisma/client";
+import { AiAnalysisService } from "../ai/ai-analysis.service";
 import { NotificationsService } from "../notifications/notifications.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateCustomerReportDto } from "./dto/create-customer-report.dto";
 import {
   ApproveReportDto,
   AssignReportDto,
+  SendAdminMessageDto,
   UpdateReportDto,
 } from "./dto/report-actions.dto";
 
@@ -46,6 +47,7 @@ export class ReportsService {
     private readonly prisma: PrismaService,
     private readonly config: ConfigService,
     private readonly notifications: NotificationsService,
+    private readonly aiAnalysis: AiAnalysisService,
   ) {}
 
   async createFromCustomer(
@@ -63,16 +65,26 @@ export class ReportsService {
     );
     const reportNo = await this.generateReportNo();
     const verificationCode = await this.generateVerificationCode();
-    const inferredIssueType = this.inferIssueType(`${location} ${description}`);
-    const inferredUrgency = this.inferUrgency(`${location} ${description}`);
+
+    // AI 분석을 우선 시도하고, 실패하면 규칙 기반으로 폴백한다.
+    const ai = await this.aiAnalysis.analyzeReport({ location, description });
+    const inferredIssueType =
+      ai?.issueType ?? this.inferIssueType(`${location} ${description}`);
+    // 고객이 직접 고른 긴급도가 항상 우선한다.
+    const inferredUrgency =
+      dto.urgency ?? ai?.urgency ?? this.inferUrgency(`${location} ${description}`);
     const summary =
-      this.cleanString(dto.summary) ?? this.summarizeDescription(description);
-    const missingFields = this.findMissingFields({ location, description });
+      this.cleanString(dto.summary) ??
+      ai?.summary ??
+      this.summarizeDescription(description);
+    const missingFields =
+      ai?.missingFields ?? this.findMissingFields({ location, description });
     const nextStatus =
       missingFields.length > 0
         ? ReportStatus.CUSTOMER_INFO_REQUIRED
         : ReportStatus.ADMIN_REVIEW;
-    const aiProvider = await this.getConfiguredAiProvider();
+    const aiProvider =
+      ai?.provider ?? (await this.aiAnalysis.getConfiguredProvider());
 
     const created = await this.prisma.$transaction(async (tx) => {
       const customer = await tx.customer.upsert({
@@ -124,27 +136,29 @@ export class ReportsService {
         data: {
           reportId: report.id,
           provider: aiProvider,
-          model: "initial-intake-classifier",
+          model: ai?.model ?? "rule-based-intake",
           rawInput: {
             phone,
             location,
             description,
           },
-          rawOutput: {
+          rawOutput: (ai?.rawOutput as Prisma.InputJsonValue) ?? {
             source: "local-rule",
-            note: "정식 AI 분석 연동 전 초기 접수 분류입니다.",
+            note: "AI 호출 실패 또는 미설정으로 규칙 기반 분류를 사용했습니다.",
           },
           summary,
           issueType: inferredIssueType,
           urgency: inferredUrgency,
           missingFields,
-          vendorDescription: this.buildVendorDescription({
-            summary,
-            description,
-            location,
-            urgency: inferredUrgency,
-          }),
-          confidence: 0.62,
+          vendorDescription:
+            ai?.vendorDescription ??
+            this.buildVendorDescription({
+              summary,
+              description,
+              location,
+              urgency: inferredUrgency,
+            }),
+          confidence: ai?.confidence ?? 0.62,
           needsReview: true,
         },
       });
@@ -163,7 +177,7 @@ export class ReportsService {
             fromStatus: ReportStatus.COLLECTING_INFO,
             toStatus: ReportStatus.AI_ANALYZED,
             actorType: ActorType.AI,
-            reason: "초기 자동 분류",
+            reason: ai ? "AI 분석 완료" : "규칙 기반 자동 분류",
           },
           {
             reportId: report.id,
@@ -403,6 +417,7 @@ export class ReportsService {
         status: update.status,
         note: update.note,
         finalPrice: update.finalPrice,
+        photoUrls: update.photoUrls,
         createdAt: toIso(update.createdAt),
       })),
     };
@@ -514,6 +529,56 @@ export class ReportsService {
     return this.findOne(report.reportNo);
   }
 
+  /** 관리자 메시지(안내/추가질문)를 남긴다. 질문이면 상태를 '고객 추가질문 필요'로 전환. */
+  async sendAdminMessage(id: string, dto: SendAdminMessageDto, adminId?: string) {
+    const content = this.requireCleanString(
+      dto.content,
+      "메시지 내용을 입력해 주세요.",
+    );
+
+    const report = await this.findReportRecord(id);
+    const terminalStatuses: ReportStatus[] = [
+      ReportStatus.RESOLVED,
+      ReportStatus.CANCELED,
+      ReportStatus.REJECTED,
+    ];
+    const shouldRequireReply =
+      dto.requiresCustomerReply === true &&
+      !terminalStatuses.includes(report.status);
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.reportMessage.create({
+        data: {
+          reportId: report.id,
+          senderType: SenderType.ADMIN,
+          senderId: adminId ?? null,
+          messageType: MessageType.TEXT,
+          content,
+        },
+      });
+
+      if (shouldRequireReply && report.status !== ReportStatus.CUSTOMER_INFO_REQUIRED) {
+        await tx.report.update({
+          where: { id: report.id },
+          data: { status: ReportStatus.CUSTOMER_INFO_REQUIRED },
+        });
+
+        await tx.reportStatusHistory.create({
+          data: {
+            reportId: report.id,
+            fromStatus: report.status,
+            toStatus: ReportStatus.CUSTOMER_INFO_REQUIRED,
+            actorType: ActorType.ADMIN,
+            actorId: adminId ?? null,
+            reason: "고객 추가 정보 요청",
+          },
+        });
+      }
+    });
+
+    return this.findOne(report.reportNo);
+  }
+
   async approveForBidding(id: string, dto: ApproveReportDto) {
     const updated = await this.prisma.$transaction(async (tx) => {
       const report = await tx.report.findFirst({
@@ -574,7 +639,7 @@ export class ReportsService {
     return this.findOne(updated.reportNo);
   }
 
-  async assignContractor(id: string, dto: AssignReportDto) {
+  async assignContractor(id: string, dto: AssignReportDto, adminId?: string) {
     const updated = await this.prisma.$transaction(async (tx) => {
       const report = await tx.report.findFirst({
         where: {
@@ -612,12 +677,16 @@ export class ReportsService {
 
       const now = new Date();
       const template = await this.findAssignmentTemplate(tx, dto.templateId);
+      const webBaseUrl =
+        this.config.get<string>("PUBLIC_WEB_BASE_URL")?.replace(/\/$/, "") ??
+        "http://localhost:3000";
       const renderedMessage = this.renderTemplate(
         template?.versions[0]?.content ??
           template?.content ??
           this.defaultAssignmentTemplate(),
         {
           customer_phone: report.customerPhone,
+          report_no: report.reportNo,
           issue_summary: report.summary ?? "접수",
           company_name: bid.contractorCompany.companyName,
           estimated_price: bid.estimatedPrice
@@ -626,6 +695,8 @@ export class ReportsService {
           available_time: bid.availableTime
             ? this.formatDateTimeKo(bid.availableTime)
             : "미정",
+          extra_cost_policy: this.cleanString(bid.extraCostPolicy) ?? "없음",
+          status_url: `${webBaseUrl}/report/${encodeURIComponent(report.reportNo)}?verificationCode=${encodeURIComponent(report.verificationCode)}`,
         },
       );
 
@@ -643,17 +714,12 @@ export class ReportsService {
         data: { status: BidStatus.REJECTED },
       });
 
-      const admin = await tx.adminUser.findFirst({
-        where: { isActive: true },
-        orderBy: { createdAt: "asc" },
-      });
-
       const assignment = await tx.assignment.create({
         data: {
           reportId: report.id,
           bidId: bid.id,
           contractorCompanyId: bid.contractorCompanyId,
-          assignedByAdminId: admin?.id,
+          assignedByAdminId: adminId ?? null,
           selectionReason: this.cleanString(dto.selectionReason),
           customerMessageTemplateId: template?.id,
           customerMessageRendered: renderedMessage,
@@ -696,6 +762,7 @@ export class ReportsService {
           fromStatus: report.status,
           toStatus: ReportStatus.ASSIGNED,
           actorType: ActorType.ADMIN,
+          actorId: adminId ?? null,
           reason: this.cleanString(dto.selectionReason) ?? "관리자 업체 배정",
         },
       });
@@ -879,15 +946,6 @@ export class ReportsService {
       `긴급도: ${values.urgency}`,
       `상세: ${values.description}`,
     ].join("\n");
-  }
-
-  private async getConfiguredAiProvider() {
-    const setting = await this.prisma.appSetting.findUnique({
-      where: { key: "ai_provider" },
-    });
-    const value = String(setting?.value ?? "").toLowerCase();
-
-    return value.includes("gemini") ? AiProvider.GEMINI : AiProvider.OPENAI;
   }
 
   private async uploadReportAttachments(

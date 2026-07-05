@@ -407,6 +407,10 @@ export function ContractorAssignmentsSection({
                     placeholder="현장 도착, 고압 세척 완료 등"
                   />
                 </label>
+                <label className="form-field">
+                  <span>작업 사진 (최대 5장)</span>
+                  <input accept="image/*" multiple name="photos" type="file" />
+                </label>
                 <div className="action-row">
                   <button className="primary-button" type="submit">
                     작업 상태 저장
@@ -424,6 +428,15 @@ export function ContractorAssignmentsSection({
                         ? ` · ${formatCurrency(update.finalPrice)}`
                         : ""}
                     </p>
+                    {update.photoUrls.length > 0 ? (
+                      <div className="work-photo-grid">
+                        {update.photoUrls.map((url) => (
+                          <a href={url} key={url} rel="noreferrer" target="_blank">
+                            <img alt="작업 사진" src={url} />
+                          </a>
+                        ))}
+                      </div>
+                    ) : null}
                   </div>
                 ))}
                 {assignment.workUpdates.length === 0 ? (

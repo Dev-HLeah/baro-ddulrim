@@ -3,6 +3,7 @@ import { ArrowLeft, MapPin } from "lucide-react";
 import {
   approveReportAction,
   assignBidAction,
+  sendAdminMessageAction,
   updateReportAction,
 } from "@/app/admin/reports/actions";
 import type { MessageTemplate, ReportDetail } from "@/lib/admin-api";
@@ -458,22 +459,50 @@ export function AdminReportBids({
 }
 
 export function AdminReportMessages({ report }: { report: ReportDetail }) {
+  const sendMessage = sendAdminMessageAction.bind(null, report.reportNo);
+
   return (
-    <section className="panel-section">
-      <h2>상담 기록</h2>
-      <div className="message-thread">
-        {report.messages.map((message) => (
-          <div className="message-row" key={message.id}>
-            <span>{labelOf(actorLabels, message.senderType)}</span>
-            <p>{message.content}</p>
-            <small>{formatDateTime(message.createdAt)}</small>
+    <>
+      <section className="panel-section">
+        <h2>상담 기록</h2>
+        <div className="message-thread">
+          {report.messages.map((message) => (
+            <div className="message-row" key={message.id}>
+              <span>{labelOf(actorLabels, message.senderType)}</span>
+              <p>{message.content}</p>
+              <small>{formatDateTime(message.createdAt)}</small>
+            </div>
+          ))}
+          {report.messages.length === 0 ? (
+            <p className="empty-text">상담 기록이 없습니다.</p>
+          ) : null}
+        </div>
+      </section>
+
+      <section className="panel-section">
+        <h2>고객에게 메시지 보내기</h2>
+        <form action={sendMessage} className="admin-form">
+          <label className="form-field">
+            <span>내용</span>
+            <textarea
+              name="content"
+              placeholder="예: 정확한 접수를 위해 배수구 위치(실내/실외)를 알려주세요."
+              required
+              rows={3}
+            />
+          </label>
+          <label className="checkbox-option">
+            <input defaultChecked name="requiresCustomerReply" type="checkbox" />
+            <span>고객 답변이 필요한 추가질문 (상태를 '고객 추가질문 필요'로 전환)</span>
+          </label>
+          <div className="action-row">
+            <button className="primary-button" type="submit">
+              메시지 보내기
+            </button>
           </div>
-        ))}
-        {report.messages.length === 0 ? (
-          <p className="empty-text">상담 기록이 없습니다.</p>
-        ) : null}
-      </div>
-    </section>
+        </form>
+      </section>
+    </>
   );
 }
 
@@ -537,6 +566,15 @@ export function AdminReportHistory({ report }: { report: ReportDetail }) {
                 {update.contractorCompanyName} · {update.note ?? "-"} ·{" "}
                 {formatCurrency(update.finalPrice)}
               </p>
+              {update.photoUrls.length > 0 ? (
+                <div className="work-photo-grid">
+                  {update.photoUrls.map((url) => (
+                    <a href={url} key={url} rel="noreferrer" target="_blank">
+                      <img alt="작업 사진" src={url} />
+                    </a>
+                  ))}
+                </div>
+              ) : null}
             </div>
           ))}
           {report.workUpdates.length === 0 ? (

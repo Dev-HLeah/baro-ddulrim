@@ -52,6 +52,33 @@ export default function NewReportPage() {
             rows={5}
           />
 
+          <fieldset className="urgency-choice">
+            <legend>얼마나 급한가요?</legend>
+            <div className="urgency-options">
+              <label className="urgency-option">
+                <input defaultChecked name="urgency" type="radio" value="NORMAL" />
+                <span>
+                  <strong>보통</strong>
+                  <small>며칠 안에 처리되면 돼요</small>
+                </span>
+              </label>
+              <label className="urgency-option">
+                <input name="urgency" type="radio" value="URGENT" />
+                <span>
+                  <strong>급함</strong>
+                  <small>오늘 안에 봐주세요</small>
+                </span>
+              </label>
+              <label className="urgency-option">
+                <input name="urgency" type="radio" value="EMERGENCY" />
+                <span>
+                  <strong>긴급</strong>
+                  <small>지금 물이 넘치고 있어요</small>
+                </span>
+              </label>
+            </div>
+          </fieldset>
+
           <ReportPhotoUploader />
 
           <SubmitButton className="primary-button" type="submit">

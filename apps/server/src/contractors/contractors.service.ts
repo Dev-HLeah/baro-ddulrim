@@ -456,10 +456,35 @@ export class ContractorsService {
     return this.serializeBid(bid);
   }
 
-  async submitWorkUpdate(companyId: string, assignmentId: string, dto: SubmitWorkUpdateDto) {
+  async submitWorkUpdate(
+    companyId: string,
+    assignmentId: string,
+    dto: SubmitWorkUpdateDto,
+    photos: ContractorUploadFile[] = []
+  ) {
     if (dto.status === WorkStatus.RESOLVED && dto.finalPrice == null) {
       throw new BadRequestException("해결 완료 처리에는 최종 금액이 필요합니다.");
     }
+
+    const preloadedAssignment = await this.prisma.assignment.findFirst({
+      where: {
+        id: assignmentId,
+        contractorCompanyId: companyId
+      },
+      include: {
+        report: true
+      }
+    });
+
+    if (!preloadedAssignment) {
+      throw new NotFoundException("배정 작업을 찾을 수 없습니다.");
+    }
+
+    // 업로드는 트랜잭션 밖에서 수행한다(외부 I/O로 트랜잭션을 붙잡지 않도록).
+    const photoUrls = await this.uploadWorkPhotos(
+      preloadedAssignment.report.reportNo,
+      photos
+    );
 
     const assignment = await this.prisma.$transaction(async (tx) => {
       const existingAssignment = await tx.assignment.findFirst({
@@ -487,7 +512,8 @@ export class ContractorsService {
           contractorCompanyId: existingAssignment.contractorCompanyId,
           status: dto.status,
           note,
-          finalPrice: dto.status === WorkStatus.RESOLVED ? dto.finalPrice ?? null : null
+          finalPrice: dto.status === WorkStatus.RESOLVED ? dto.finalPrice ?? null : null,
+          photoUrls
         }
       });
 
@@ -664,6 +690,51 @@ export class ContractorsService {
     return data.publicUrl;
   }
 
+  /** 완료/진행 사진을 신고 첨부 버킷의 work-updates 경로에 올린다. */
+  private async uploadWorkPhotos(reportNo: string, photos: ContractorUploadFile[]) {
+    const validPhotos = photos.filter((photo) => photo.size > 0);
+
+    if (validPhotos.length === 0) {
+      return [];
+    }
+
+    const supabaseUrl = this.config.get<string>("SUPABASE_URL");
+    const serviceRoleKey = this.config.get<string>("SUPABASE_SERVICE_ROLE_KEY");
+    const bucketName = this.config.get<string>("SUPABASE_REPORT_ATTACHMENTS_BUCKET");
+
+    if (!supabaseUrl || !serviceRoleKey || !bucketName) {
+      throw new BadRequestException("사진 저장 환경변수가 설정되지 않았습니다.");
+    }
+
+    const supabase = createClient(supabaseUrl, serviceRoleKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    });
+
+    return Promise.all(
+      validPhotos.map(async (photo, index) => {
+        if (!photo.mimetype.startsWith("image/")) {
+          throw new BadRequestException("작업 사진은 이미지 파일만 올릴 수 있습니다.");
+        }
+
+        const storagePath = `${reportNo}/work-updates/${Date.now()}-${index}-${randomUUID()}${this.safeExtension(photo)}`;
+        const { error } = await supabase.storage.from(bucketName).upload(storagePath, photo.buffer, {
+          contentType: photo.mimetype,
+          upsert: false
+        });
+
+        if (error) {
+          throw new BadRequestException(`작업 사진 업로드에 실패했습니다: ${error.message}`);
+        }
+
+        const { data } = supabase.storage.from(bucketName).getPublicUrl(storagePath);
+        return data.publicUrl;
+      })
+    );
+  }
+
   private safeExtension(file: ContractorUploadFile) {
     const extension = extname(file.originalname).toLowerCase();
 
@@ -772,6 +843,7 @@ export class ContractorsService {
       status: WorkStatus;
       note: string | null;
       finalPrice: number | null;
+      photoUrls: string[];
       createdAt: Date;
     }>;
   }) {
@@ -815,6 +887,7 @@ export class ContractorsService {
         status: update.status,
         note: update.note,
         finalPrice: update.finalPrice,
+        photoUrls: update.photoUrls,
         createdAt: toIso(update.createdAt)
       }))
     };

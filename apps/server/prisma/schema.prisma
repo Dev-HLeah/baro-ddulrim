@@ -398,6 +398,7 @@ model WorkUpdate {
   status              WorkStatus
   note                String?    @db.Text
   finalPrice          Int?
+  photoUrls           String[]   @default([])
   createdAt           DateTime   @default(now())
 
   report            Report            @relation(fields: [reportId], references: [id], onDelete: Cascade)

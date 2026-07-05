@@ -10,7 +10,7 @@ import {
   UseGuards,
   UseInterceptors
 } from "@nestjs/common";
-import { FileFieldsInterceptor } from "@nestjs/platform-express";
+import { FileFieldsInterceptor, FilesInterceptor } from "@nestjs/platform-express";
 import { AdminGuard } from "../auth/admin.guard";
 import { CurrentAccount } from "../auth/auth.decorators";
 import type { AuthAccount } from "../auth/auth.types";
@@ -133,14 +133,23 @@ export class ContractorsController {
 
   @Post(":companyId/assignments/:assignmentId/work-updates")
   @UseGuards(ContractorGuard)
+  @UseInterceptors(
+    FilesInterceptor("photos", 5, {
+      limits: {
+        fileSize: 20 * 1024 * 1024
+      }
+    })
+  )
   async submitWorkUpdate(
     @CurrentAccount() account: AuthAccount,
     @Param("companyId") companyId: string,
     @Param("assignmentId") assignmentId: string,
-    @Body() dto: SubmitWorkUpdateDto
+    @Body() dto: SubmitWorkUpdateDto,
+    @UploadedFiles()
+    photos: Array<{ buffer: Buffer; mimetype: string; originalname: string; size: number }>
   ) {
     this.assertOwnership(account, companyId);
-    return this.contractorsService.submitWorkUpdate(companyId, assignmentId, dto);
+    return this.contractorsService.submitWorkUpdate(companyId, assignmentId, dto, photos ?? []);
   }
 
   /** 로그인한 업체 계정이 해당 업체(companyId)의 소유자인지 확인한다. */

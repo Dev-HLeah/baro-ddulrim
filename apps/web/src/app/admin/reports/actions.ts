@@ -91,6 +91,26 @@ export async function approveReportAction(
   redirect(`/admin/reports/${reportNo}/review`);
 }
 
+export async function sendAdminMessageAction(
+  reportNo: string,
+  formData: FormData,
+) {
+  await mutate(`/reports/${encodeURIComponent(reportNo)}/messages`, {
+    method: "POST",
+    body: JSON.stringify({
+      content: textValue(formData, "content"),
+      requiresCustomerReply: formData.get("requiresCustomerReply") === "on",
+    }),
+  });
+
+  revalidatePath("/admin");
+  revalidatePath("/admin/reports");
+  revalidatePath(`/admin/reports/${reportNo}`);
+  revalidatePath(`/admin/reports/${reportNo}/messages`);
+  revalidatePath(`/admin/reports/${reportNo}/history`);
+  redirect(`/admin/reports/${reportNo}/messages`);
+}
+
 export async function assignBidAction(reportNo: string, formData: FormData) {
   await mutate(`/reports/${encodeURIComponent(reportNo)}/assign`, {
     method: "POST",

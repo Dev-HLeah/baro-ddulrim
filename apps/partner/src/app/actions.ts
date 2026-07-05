@@ -140,21 +140,26 @@ export async function submitWorkUpdateAction(
   assignmentId: string,
   formData: FormData,
 ) {
+  const apiFormData = new FormData();
+  appendText(apiFormData, "status", textValue(formData, "status"));
+  appendText(apiFormData, "note", textValue(formData, "note"));
+  appendText(apiFormData, "finalPrice", textValue(formData, "finalPrice"));
+  formData
+    .getAll("photos")
+    .filter((entry): entry is File => entry instanceof File && entry.size > 0)
+    .slice(0, 5)
+    .forEach((file) => {
+      apiFormData.append("photos", file, file.name);
+    });
+
   const response = await fetch(
     `${apiBaseUrl}/contractors/${encodeURIComponent(companyId)}/assignments/${encodeURIComponent(
       assignmentId,
     )}/work-updates`,
     {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...(await authHeader()),
-      },
-      body: JSON.stringify({
-        status: textValue(formData, "status"),
-        note: textValue(formData, "note"),
-        finalPrice: numberValue(formData, "finalPrice"),
-      }),
+      headers: await authHeader(),
+      body: apiFormData,
     },
   );
 

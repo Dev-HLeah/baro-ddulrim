@@ -11,6 +11,14 @@ export type DashboardSummary = {
   mapMarkerCount: number;
   statusCounts: Record<string, number>;
   channelCounts: Record<string, number>;
+  issueTypeCounts: Record<string, number>;
+  regionCounts: Record<string, number>;
+  contractorStats: Array<{
+    companyId: string;
+    companyName: string;
+    assignedCount: number;
+    resolvedCount: number;
+  }>;
   averageMinutes: {
     approval: number | null;
     assignment: number | null;
@@ -130,6 +138,7 @@ export type ReportDetail = ReportListItem & {
     status: string;
     note: string | null;
     finalPrice: number | null;
+    photoUrls: string[];
     createdAt: string | null;
   }>;
 };
@@ -219,6 +228,9 @@ export function getDashboardSummary() {
     mapMarkerCount: 0,
     statusCounts: {},
     channelCounts: {},
+    issueTypeCounts: {},
+    regionCounts: {},
+    contractorStats: [],
     averageMinutes: {
       approval: null,
       assignment: null,
