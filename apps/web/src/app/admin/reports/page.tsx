@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { RotateCcw } from "lucide-react";
 import { AdminShell } from "@/components/admin-shell";
+import { ReportDateFilter } from "@/components/report-date-filter";
 import { getReports, type ReportListItem } from "@/lib/admin-api";
 import {
   channelLabels,
@@ -140,32 +140,7 @@ export default async function AdminReportsPage({
         })}
       </section>
 
-      <form className="date-filter-bar" method="get">
-        {activeFilter !== "all" ? (
-          <input name="status" type="hidden" value={activeFilter} />
-        ) : null}
-        <label>
-          <span>시작일</span>
-          <input defaultValue={from ?? ""} name="from" type="date" />
-        </label>
-        <label>
-          <span>종료일</span>
-          <input defaultValue={to ?? ""} name="to" type="date" />
-        </label>
-        <button className="secondary-button" type="submit">
-          기간 적용
-        </button>
-        {from || to ? (
-          <Link
-            aria-label="기간 초기화"
-            className="icon-link"
-            href={`/admin/reports${buildQuery({ status: activeFilter })}`}
-            title="기간 초기화"
-          >
-            <RotateCcw aria-hidden="true" size={18} />
-          </Link>
-        ) : null}
-      </form>
+      <ReportDateFilter from={from} status={activeFilter} to={to} />
 
       <section className="panel-section">
         <div className="data-table-wrap">
