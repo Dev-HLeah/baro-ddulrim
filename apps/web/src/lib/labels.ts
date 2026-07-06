@@ -15,6 +15,28 @@ export const statusLabels: Record<string, string> = {
   REJECTED: "반려"
 };
 
+// 상태를 5개 톤 그룹으로 묶는다 (배지 색상용)
+export function statusTone(status: string | null | undefined) {
+  switch (status) {
+    case "APPROVED_FOR_BIDDING":
+    case "BIDDING":
+      return "tone-bidding";
+    case "ASSIGNED":
+    case "DISPATCH_SCHEDULED":
+    case "DISPATCHED":
+    case "IN_PROGRESS":
+      return "tone-working";
+    case "RESOLVED":
+      return "tone-resolved";
+    case "ON_HOLD":
+    case "CANCELED":
+    case "REJECTED":
+      return "tone-exception";
+    default:
+      return "tone-review";
+  }
+}
+
 export const issueTypeLabels: Record<string, string> = {
   FLOOD: "침수",
   DRAIN: "배수구",

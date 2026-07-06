@@ -9,6 +9,7 @@ import {
   issueTypeLabels,
   labelOf,
   statusLabels,
+  statusTone,
   urgencyLabels
 } from "@/lib/labels";
 
@@ -164,7 +165,9 @@ export default async function AdminPage() {
                     </span>
                   </td>
                   <td>
-                    <span className="status-badge">{labelOf(statusLabels, report.status)}</span>
+                    <span className={`status-badge ${statusTone(report.status)}`}>
+                      {labelOf(statusLabels, report.status)}
+                    </span>
                   </td>
                   <td>{labelOf(channelLabels, report.channel)}</td>
                   <td>{formatDateTime(report.createdAt)}</td>

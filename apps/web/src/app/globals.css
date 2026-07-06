@@ -2409,3 +2409,95 @@ body {
 .kakao-map-container {
   min-height: 520px;
 }
+
+/* 신고 목록: 클릭형 상태 필터 칩 */
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 1.5px solid var(--bd-line-soft);
+  background: #ffffff;
+  color: var(--bd-ink);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.filter-chip:hover {
+  border-color: var(--bd-primary);
+}
+
+.filter-chip.active {
+  background: var(--bd-primary);
+  border-color: var(--bd-primary);
+  color: #ffffff;
+}
+
+/* 기간 필터 바 */
+.date-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+  padding: 12px 14px;
+  background: #ffffff;
+  border: 1px solid var(--bd-line-soft);
+  border-left: 6px solid var(--bd-primary);
+  border-radius: 0 10px 10px 0;
+}
+
+.date-filter-bar label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #41546a;
+}
+
+.date-filter-bar input[type="date"] {
+  min-height: 42px;
+  padding: 0 10px;
+  border: 1.5px solid var(--bd-line-strong);
+  border-radius: 8px;
+  font-size: 14px;
+  background: #ffffff;
+  color: var(--bd-ink);
+}
+
+.date-filter-bar .secondary-button {
+  min-height: 42px;
+}
+
+/* 상태별 배지 색 구분 */
+.status-badge.tone-review {
+  background: #fef6e7;
+  color: #92600a;
+  border-color: #d97706;
+}
+
+.status-badge.tone-bidding {
+  background: #e0f2fe;
+  color: #075985;
+  border-color: var(--bd-primary);
+}
+
+.status-badge.tone-working {
+  background: #efedfd;
+  color: #4338ca;
+  border-color: #6366f1;
+}
+
+.status-badge.tone-resolved {
+  background: #f0faf3;
+  color: #166534;
+  border-color: #15803d;
+}
+
+.status-badge.tone-exception {
+  background: #f4f6f8;
+  color: #4b5b6b;
+  border-color: #8a99a8;
+}
