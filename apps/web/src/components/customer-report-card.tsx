@@ -1,4 +1,3 @@
-import { submitCustomerReplyAction } from "@/app/actions";
 import type { CustomerReport } from "@/lib/customer-api";
 import {
   actorLabels,
@@ -39,28 +38,11 @@ const exceptionStatuses: Record<string, string> = {
   REJECTED: "접수가 반려되었습니다. 문의가 필요하면 연락 주세요.",
 };
 
-export function CustomerReportCard({
-  report,
-  phoneHint,
-  replyRedirectTo,
-}: {
-  report: CustomerReport;
-  phoneHint?: string;
-  replyRedirectTo?: string;
-}) {
+export function CustomerReportCard({ report }: { report: CustomerReport }) {
   const exceptionMessage = exceptionStatuses[report.status];
   const currentStep = stepIndexByStatus[report.status] ?? 1;
-  const needsReply = report.status === "CUSTOMER_INFO_REQUIRED";
   const isBiddingOpen =
     report.status === "APPROVED_FOR_BIDDING" || report.status === "BIDDING";
-  const submitReply = submitCustomerReplyAction.bind(
-    null,
-    report.reportNo,
-    replyRedirectTo ?? "/report/lookup",
-  );
-  const conversationMessages = report.messages.filter(
-    (message) => message.senderType === "ADMIN" || message.senderType === "CUSTOMER",
-  );
 
   return (
     <article className="customer-report-card">
@@ -97,57 +79,6 @@ export function CustomerReportCard({
           })}
         </ol>
       )}
-
-      {needsReply ? (
-        <div className="customer-reply-panel">
-          <strong>답변이 필요해요</strong>
-          <p>정확한 접수를 위해 아래 질문에 답변해 주세요.</p>
-          {conversationMessages.length > 0 ? (
-            <div className="customer-thread">
-              {conversationMessages.map((message) => (
-                <p
-                  className={`customer-thread-message ${message.senderType.toLowerCase()}`}
-                  key={message.id}
-                >
-                  <span>{message.senderType === "ADMIN" ? "상담원" : "나"}</span>
-                  {message.content}
-                </p>
-              ))}
-            </div>
-          ) : null}
-          <form action={submitReply} className="customer-reply-form">
-            <label className="form-field">
-              <span>신고할 때 입력한 연락처</span>
-              <input
-                defaultValue={phoneHint ?? ""}
-                name="phone"
-                placeholder="010-0000-0000"
-                required
-                type="tel"
-              />
-            </label>
-            <label className="form-field">
-              <span>답변 내용</span>
-              <textarea name="content" required rows={3} />
-            </label>
-            <button className="primary-button" type="submit">
-              답변 보내기
-            </button>
-          </form>
-        </div>
-      ) : conversationMessages.length > 0 ? (
-        <div className="customer-thread">
-          {conversationMessages.map((message) => (
-            <p
-              className={`customer-thread-message ${message.senderType.toLowerCase()}`}
-              key={message.id}
-            >
-              <span>{message.senderType === "ADMIN" ? "상담원" : "나"}</span>
-              {message.content}
-            </p>
-          ))}
-        </div>
-      ) : null}
 
       <dl className="info-list compact-list">
         <div>

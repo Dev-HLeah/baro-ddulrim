@@ -18,7 +18,6 @@ import { CreateCustomerReportDto } from "./dto/create-customer-report.dto";
 import {
   ApproveReportDto,
   AssignReportDto,
-  SendAdminMessageDto,
   UpdateReportDto
 } from "./dto/report-actions.dto";
 import { ReportsService } from "./reports.service";
@@ -71,16 +70,6 @@ export class ReportsController {
   @UseGuards(AdminGuard)
   async update(@Param("id") id: string, @Body() dto: UpdateReportDto) {
     return this.reportsService.update(id, dto);
-  }
-
-  @Post(":id/messages")
-  @UseGuards(AdminGuard)
-  async sendAdminMessage(
-    @CurrentAdmin() admin: AuthAdmin,
-    @Param("id") id: string,
-    @Body() dto: SendAdminMessageDto
-  ) {
-    return this.reportsService.sendAdminMessage(id, dto, admin.id);
   }
 
   @Post(":id/approve")

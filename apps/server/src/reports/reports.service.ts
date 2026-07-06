@@ -30,7 +30,6 @@ import { CreateCustomerReportDto } from "./dto/create-customer-report.dto";
 import {
   ApproveReportDto,
   AssignReportDto,
-  SendAdminMessageDto,
   UpdateReportDto,
 } from "./dto/report-actions.dto";
 
@@ -79,10 +78,8 @@ export class ReportsService {
       this.summarizeDescription(description);
     const missingFields =
       ai?.missingFields ?? this.findMissingFields({ location, description });
-    const nextStatus =
-      missingFields.length > 0
-        ? ReportStatus.CUSTOMER_INFO_REQUIRED
-        : ReportStatus.ADMIN_REVIEW;
+    // 부족한 정보는 관리자가 전화/문자로 확인한다. 접수는 항상 검수로 넘긴다.
+    const nextStatus = ReportStatus.ADMIN_REVIEW;
     const aiProvider =
       ai?.provider ?? (await this.aiAnalysis.getConfiguredProvider());
 
@@ -184,10 +181,7 @@ export class ReportsService {
             fromStatus: ReportStatus.AI_ANALYZED,
             toStatus: nextStatus,
             actorType: ActorType.SYSTEM,
-            reason:
-              nextStatus === ReportStatus.CUSTOMER_INFO_REQUIRED
-                ? "필수 정보 추가 필요"
-                : "관리자 검수 대기",
+            reason: "관리자 검수 대기",
           },
         ],
       });
@@ -522,56 +516,6 @@ export class ReportsService {
             newValue: change.newValue,
             reason,
           })),
-        });
-      }
-    });
-
-    return this.findOne(report.reportNo);
-  }
-
-  /** 관리자 메시지(안내/추가질문)를 남긴다. 질문이면 상태를 '고객 추가질문 필요'로 전환. */
-  async sendAdminMessage(id: string, dto: SendAdminMessageDto, adminId?: string) {
-    const content = this.requireCleanString(
-      dto.content,
-      "메시지 내용을 입력해 주세요.",
-    );
-
-    const report = await this.findReportRecord(id);
-    const terminalStatuses: ReportStatus[] = [
-      ReportStatus.RESOLVED,
-      ReportStatus.CANCELED,
-      ReportStatus.REJECTED,
-    ];
-    const shouldRequireReply =
-      dto.requiresCustomerReply === true &&
-      !terminalStatuses.includes(report.status);
-
-    await this.prisma.$transaction(async (tx) => {
-      await tx.reportMessage.create({
-        data: {
-          reportId: report.id,
-          senderType: SenderType.ADMIN,
-          senderId: adminId ?? null,
-          messageType: MessageType.TEXT,
-          content,
-        },
-      });
-
-      if (shouldRequireReply && report.status !== ReportStatus.CUSTOMER_INFO_REQUIRED) {
-        await tx.report.update({
-          where: { id: report.id },
-          data: { status: ReportStatus.CUSTOMER_INFO_REQUIRED },
-        });
-
-        await tx.reportStatusHistory.create({
-          data: {
-            reportId: report.id,
-            fromStatus: report.status,
-            toStatus: ReportStatus.CUSTOMER_INFO_REQUIRED,
-            actorType: ActorType.ADMIN,
-            actorId: adminId ?? null,
-            reason: "고객 추가 정보 요청",
-          },
         });
       }
     });

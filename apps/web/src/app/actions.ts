@@ -73,35 +73,3 @@ export async function createCustomerReportAction(formData: FormData) {
   );
 }
 
-export async function submitCustomerReplyAction(
-  reportNo: string,
-  redirectTo: string,
-  formData: FormData,
-) {
-  const phone = textValue(formData, "phone");
-  const content = textValue(formData, "content");
-
-  if (!phone || !content) {
-    throw new Error("연락처와 답변 내용을 입력해 주세요.");
-  }
-
-  const response = await fetch(
-    `${apiBaseUrl}/customers/reports/${encodeURIComponent(reportNo)}/messages`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ phone, content }),
-    },
-  );
-
-  if (!response.ok) {
-    const message = await response.text();
-    throw new Error(message || "답변을 등록하지 못했습니다.");
-  }
-
-  revalidatePath("/report/lookup");
-  revalidatePath(`/report/${reportNo}`);
-  redirect(redirectTo);
-}

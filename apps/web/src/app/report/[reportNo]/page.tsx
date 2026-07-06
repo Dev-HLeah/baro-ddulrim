@@ -17,9 +17,6 @@ export default async function CustomerReportDetailPage({
     reportNo,
     verificationCode,
   );
-  const detailPath = `/report/${encodeURIComponent(reportNo)}?verificationCode=${encodeURIComponent(
-    verificationCode ?? "",
-  )}`;
 
   return (
     <main className="shell customer-detail-shell">
@@ -71,7 +68,7 @@ export default async function CustomerReportDetailPage({
         ) : null}
 
         {report ? (
-          <CustomerReportCard replyRedirectTo={detailPath} report={report} />
+          <CustomerReportCard report={report} />
         ) : (
           <form className="lookup-form verification-panel">
             <label htmlFor="verificationCode">확인번호</label>

@@ -58,16 +58,6 @@ export class ApproveReportDto {
   reason?: string | null;
 }
 
-export class SendAdminMessageDto {
-  @IsString()
-  @MaxLength(2000)
-  content!: string;
-
-  // true면 고객 답변이 필요한 질문으로 처리해 상태를 '고객 추가질문 필요'로 전환한다.
-  @IsOptional()
-  requiresCustomerReply?: boolean;
-}
-
 export class AssignReportDto {
   @IsString()
   bidId!: string;

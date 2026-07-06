@@ -29,13 +29,6 @@ export type CustomerReport = {
     customerMessageRendered: string | null;
     assignedAt: string | null;
   } | null;
-  messages: Array<{
-    id: string;
-    senderType: string;
-    messageType: string;
-    content: string;
-    createdAt: string | null;
-  }>;
   statusHistory: Array<{
     id: string;
     fromStatus: string | null;
