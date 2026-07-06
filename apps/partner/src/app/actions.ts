@@ -66,9 +66,9 @@ export async function submitContractorBidAction(
     throw new Error(message || "입찰을 제출하지 못했습니다.");
   }
 
+  // redirect 없이 revalidate만 — 화면 전체 로딩 없이 현재 화면이 갱신된다.
   revalidatePath("/");
   revalidatePath("/bids");
-  redirect(`/bids?companyId=${encodeURIComponent(companyId)}`);
 }
 
 function appendText(target: FormData, key: string, value: string | null) {
@@ -170,5 +170,4 @@ export async function submitWorkUpdateAction(
 
   revalidatePath("/");
   revalidatePath("/jobs");
-  redirect(`/jobs?companyId=${encodeURIComponent(companyId)}`);
 }

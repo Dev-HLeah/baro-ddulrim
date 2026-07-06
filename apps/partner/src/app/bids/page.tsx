@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { BidWorkspace } from "@/components/bid-workspace";
 import {
   ContractorBidsTable,
-  ContractorOpportunitiesSection,
   ContractorSummaryMetrics,
 } from "@/components/contractor-sections";
 import {
@@ -49,10 +49,7 @@ export default async function ContractorBidsPage() {
         bids={bids}
         opportunities={opportunities}
       />
-      <ContractorOpportunitiesSection
-        opportunities={opportunities}
-        selectedCompany={company}
-      />
+      <BidWorkspace companyId={company.id} opportunities={opportunities} />
       <ContractorBidsTable bids={bids} />
     </main>
   );

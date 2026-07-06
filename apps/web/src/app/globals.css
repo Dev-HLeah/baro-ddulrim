@@ -2548,3 +2548,16 @@ body {
 .icon-link:hover {
   border-color: var(--bd-primary);
 }
+
+/* 왼쪽 액센트 바 제거 — 네 면 동일한 얇은 보더로 통일 */
+.panel-section,
+.customer-panel,
+.ops-panel,
+.settings-card,
+.timeline-card,
+.customer-report-card,
+.date-filter-bar,
+.map-filter-bar {
+  border-left: 1px solid var(--bd-line-soft);
+  border-radius: 10px;
+}

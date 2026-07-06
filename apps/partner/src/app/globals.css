@@ -2226,3 +2226,128 @@ body {
 .icon-link:hover {
   border-color: var(--bd-primary);
 }
+
+/* 왼쪽 액센트 바 제거 — 네 면 동일한 얇은 보더로 통일 */
+.panel-section,
+.opportunity-card,
+.assignment-work-card,
+.status-gate {
+  border-left: 1px solid var(--bd-line-soft);
+  border-radius: 10px;
+}
+
+.auth-card {
+  border-top: 1px solid var(--bd-line-soft);
+}
+
+/* 입찰 검색 바 */
+.bid-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.bid-filter-bar label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #41546a;
+}
+
+.bid-filter-bar label:first-child {
+  flex: 1;
+  min-width: 180px;
+}
+
+.bid-filter-bar input {
+  min-height: 42px;
+  padding: 0 12px;
+  border: 1.5px solid var(--bd-line-strong);
+  border-radius: 8px;
+  font-size: 14px;
+  background: #ffffff;
+  color: var(--bd-ink);
+}
+
+/* 입찰 마스터-디테일 */
+.bid-workspace {
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+}
+
+.bid-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 640px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.bid-list-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  border: 1.5px solid var(--bd-line-soft);
+  border-radius: 10px;
+  background: #ffffff;
+  text-align: left;
+  cursor: pointer;
+}
+
+.bid-list-item:hover {
+  border-color: var(--bd-primary);
+}
+
+.bid-list-item.active {
+  border-color: var(--bd-primary);
+  background: #e0f2fe;
+}
+
+.bid-list-item-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.bid-list-no {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--bd-primary);
+}
+
+.bid-list-item strong {
+  font-size: 14px;
+  color: var(--bd-ink);
+  line-height: 1.4;
+}
+
+.bid-list-item small {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: #5b6b7c;
+}
+
+.bid-detail-card {
+  margin: 0;
+}
+
+@media (max-width: 860px) {
+  .bid-workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .bid-list {
+    max-height: 300px;
+  }
+}
