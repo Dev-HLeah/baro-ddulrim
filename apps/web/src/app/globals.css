@@ -1790,7 +1790,7 @@ body {
   font-size: 15px;
   font-weight: 600;
   border-radius: 10px;
-  border: 2px solid var(--bd-primary);
+  border: 1.5px solid var(--bd-primary);
   color: var(--bd-primary);
   background: #ffffff;
 }
@@ -1803,7 +1803,7 @@ body {
 .admin-form textarea,
 .customer-reply-form input,
 .customer-reply-form textarea {
-  border: 2px solid var(--bd-line-strong);
+  border: 1.5px solid var(--bd-line-strong);
   border-radius: 8px;
   font-size: 16px;
   color: var(--bd-ink);
@@ -1822,7 +1822,7 @@ body {
   font-size: 14px;
   color: #41546a;
   background: #eef3f8;
-  border-bottom: 2px solid var(--bd-line-strong);
+  border-bottom: 1.5px solid var(--bd-line-strong);
 }
 
 .data-table td {
@@ -1914,7 +1914,7 @@ body {
 
 .urgency-option {
   display: block;
-  border: 2px solid var(--bd-line-strong);
+  border: 1.5px solid var(--bd-line-strong);
   border-radius: 10px;
   padding: 12px;
   cursor: pointer;
@@ -1953,7 +1953,7 @@ body {
 
 /* 접수 완료 패널 */
 .report-created-panel {
-  border: 2px solid var(--bd-green);
+  border: 1.5px solid var(--bd-green);
   border-radius: 10px;
   padding: 18px;
   background: #f0faf3;
@@ -1986,7 +1986,7 @@ body {
 
 .report-created-codes div {
   background: #ffffff;
-  border: 2px solid var(--bd-line-strong);
+  border: 1.5px solid var(--bd-line-strong);
   border-radius: 8px;
   padding: 10px 14px;
   display: grid;
@@ -2006,7 +2006,7 @@ body {
 .copy-button {
   min-height: 46px;
   border-radius: 10px;
-  border: 2px solid var(--bd-green);
+  border: 1.5px solid var(--bd-green);
   background: #ffffff;
   color: var(--bd-green);
   font-size: 15px;
@@ -2039,7 +2039,7 @@ body {
   place-items: center;
   font-size: 15px;
   font-weight: 700;
-  border: 2px solid var(--bd-line-strong);
+  border: 1.5px solid var(--bd-line-strong);
   background: #ffffff;
   color: var(--bd-line-strong);
 }
@@ -2068,7 +2068,7 @@ body {
 
 /* 답변 요청/대화 */
 .customer-reply-panel {
-  border: 2px solid var(--bd-amber);
+  border: 1.5px solid var(--bd-amber);
   border-radius: 10px;
   background: #fff8ec;
   padding: 16px;
@@ -2124,7 +2124,7 @@ body {
 }
 
 .customer-exception {
-  border: 2px solid var(--bd-line-strong);
+  border: 1.5px solid var(--bd-line-strong);
   border-radius: 10px;
   padding: 14px 16px;
   background: #f5f7fa;
@@ -2178,7 +2178,7 @@ body {
 
 .map-filter-bar select {
   min-height: 42px;
-  border: 2px solid var(--bd-line-strong);
+  border: 1.5px solid var(--bd-line-strong);
   border-radius: 8px;
   font-size: 14px;
   padding: 0 10px;
@@ -2241,7 +2241,7 @@ body {
   height: 84px;
   object-fit: cover;
   border-radius: 8px;
-  border: 2px solid var(--bd-line-strong);
+  border: 1.5px solid var(--bd-line-strong);
 }
 
 @media (max-width: 640px) {
@@ -2252,4 +2252,28 @@ body {
   .report-created-codes {
     grid-template-columns: 1fr;
   }
+}
+
+/* 래퍼(.input-row)가 있는 입력은 래퍼에만 보더 — 이중 테두리 제거 */
+.input-row {
+  border: 1.5px solid var(--bd-line-strong);
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.input-row input,
+.input-row select,
+.input-row textarea {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.input-row input:focus,
+.input-row select:focus {
+  outline: 0;
+}
+
+.input-row:focus-within {
+  border-color: var(--bd-primary);
 }
