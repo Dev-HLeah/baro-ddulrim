@@ -2133,3 +2133,49 @@ body {
   outline: 2px solid var(--bd-primary);
   outline-offset: 2px;
 }
+
+/* ===== UI 다듬기: 시원한 하늘색 팔레트 + 컴팩트 카드 + 배지 폭 수정 ===== */
+:root {
+  --bd-primary: #0ea5e9;
+  --bd-primary-dark: #0c4a6e;
+  --bd-ink: #182635;
+  --bd-line-strong: #2a4a66;
+  --bd-line-soft: #bfe0f5;
+  --bd-page: #edf7fd;
+}
+
+.status-badge {
+  background: #e0f2fe;
+  color: #075985;
+}
+
+.urgency-badge.normal {
+  background: #e0f2fe;
+  color: #075985;
+}
+
+.data-table td .status-badge,
+.data-table td .urgency-badge {
+  display: inline-flex;
+  width: fit-content;
+  margin-top: 0;
+}
+
+.dashboard-grid {
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+}
+
+.metric {
+  min-height: 0;
+  padding: 12px 14px;
+  gap: 4px;
+}
+
+.metric strong {
+  font-size: 22px;
+}
+
+.bid-inline-status {
+  background: #e0f2fe;
+}

@@ -2346,3 +2346,66 @@ body {
   outline: 2px solid var(--bd-primary);
   outline-offset: 2px;
 }
+
+/* ===== UI 다듬기: 시원한 하늘색 팔레트 + 컴팩트 카드 + 배지 폭 수정 + 지도 레이아웃 ===== */
+:root {
+  --bd-primary: #0ea5e9;
+  --bd-primary-dark: #0c4a6e;
+  --bd-ink: #182635;
+  --bd-line-strong: #2a4a66;
+  --bd-line-soft: #bfe0f5;
+  --bd-page: #edf7fd;
+}
+
+.status-badge {
+  background: #e0f2fe;
+  color: #075985;
+}
+
+.urgency-badge.normal,
+.map-legend-item.normal {
+  background: #e0f2fe;
+  color: #075985;
+}
+
+/* 상태/긴급 배지: 셀 폭만큼 늘어나지 않게 내용 크기로 */
+.data-table td .status-badge,
+.data-table td .urgency-badge {
+  display: inline-flex;
+  width: fit-content;
+  margin-top: 0;
+}
+
+/* 현황 카드: 한 줄 4~5개 컴팩트 */
+.dashboard-grid {
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 10px;
+}
+
+.metric {
+  min-height: 0;
+  padding: 12px 14px;
+  gap: 4px;
+}
+
+.metric strong {
+  font-size: 22px;
+}
+
+.stat-bar-row {
+  padding: 7px 12px;
+}
+
+/* 지도: 필터 바는 그리드 전체 폭을 차지하고, 캔버스/패널은 그 아래 배치 */
+.report-map-layout {
+  gap: 12px;
+}
+
+.report-map-layout > .map-filter-bar {
+  grid-column: 1 / -1;
+}
+
+.report-map-canvas,
+.kakao-map-container {
+  min-height: 520px;
+}
