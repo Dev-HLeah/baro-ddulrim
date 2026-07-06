@@ -4,12 +4,16 @@
   "private": true,
   "scripts": {
     "dev": "prisma generate && nest start --watch",
+    "dev2": "cp .env.dev .env && dotenv -e .env -- nest start --watch",
+    "prd2": "cp .env.prd .env && dotenv -e .env -- node dist/main.js",
     "build": "prisma generate && nest build",
     "start": "node dist/main.js",
     "lint": "tsc --noEmit",
     "typecheck": "prisma generate && tsc --noEmit",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
+    "db:migrate:dev": "cp .env.dev .env && dotenv -e .env -- prisma migrate deploy",
+    "db:migrate:prd": "cp .env.prd .env && dotenv -e .env -- prisma migrate deploy",
     "db:push": "prisma db push",
     "db:seed": "prisma generate && prisma db seed"
   },
