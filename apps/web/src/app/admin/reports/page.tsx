@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { RotateCcw } from "lucide-react";
 import { AdminShell } from "@/components/admin-shell";
 import { getReports, type ReportListItem } from "@/lib/admin-api";
 import {
@@ -156,10 +157,12 @@ export default async function AdminReportsPage({
         </button>
         {from || to ? (
           <Link
-            className="text-link"
+            aria-label="기간 초기화"
+            className="icon-link"
             href={`/admin/reports${buildQuery({ status: activeFilter })}`}
+            title="기간 초기화"
           >
-            기간 초기화
+            <RotateCcw aria-hidden="true" size={18} />
           </Link>
         ) : null}
       </form>

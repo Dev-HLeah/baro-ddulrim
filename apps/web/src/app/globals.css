@@ -2501,3 +2501,50 @@ body {
   color: #4b5b6b;
   border-color: #8a99a8;
 }
+
+/* 모든 테이블 셀 세로 가운데 정렬 */
+.data-table th,
+.data-table td {
+  vertical-align: middle;
+}
+
+/* select: 커스텀 화살표로 오른쪽 여백 확보 */
+.admin-form select,
+.form-field select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding: 0 42px 0 12px;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%232a4a66' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+}
+
+/* 로딩: 반투명 검은 오버레이 (페이지 전환 시 화면 유지 느낌) */
+.loading-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  min-height: 100vh;
+  background: rgba(13, 27, 42, 0.5);
+}
+
+.loading-screen .spinner {
+  color: #ffffff;
+}
+
+/* 아이콘 버튼형 링크 (기간 초기화 등) */
+.icon-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 8px;
+  border: 1.5px solid var(--bd-line-soft);
+  background: #ffffff;
+  color: var(--bd-primary);
+}
+
+.icon-link:hover {
+  border-color: var(--bd-primary);
+}
