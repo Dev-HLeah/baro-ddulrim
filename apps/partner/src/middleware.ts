@@ -19,6 +19,7 @@ export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
+    cookieOptions: { name: "sb-baro-partner-auth" },
     cookies: {
       getAll() {
         return request.cookies.getAll();

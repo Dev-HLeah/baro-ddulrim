@@ -12,6 +12,7 @@ export async function createSupabaseServerClient() {
   const cookieStore = await cookies();
 
   return createServerClient(supabaseUrl, supabaseAnonKey, {
+    cookieOptions: { name: "sb-baro-partner-auth" },
     cookies: {
       getAll() {
         return cookieStore.getAll();
