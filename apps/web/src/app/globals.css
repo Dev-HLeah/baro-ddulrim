@@ -2561,3 +2561,32 @@ body {
   border-left: 1px solid var(--bd-line-soft);
   border-radius: 10px;
 }
+
+/* 라우터 이동 로딩: 흰색 전체 화면 */
+.loading-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: #ffffff;
+}
+
+.loading-screen .spinner {
+  color: var(--bd-primary);
+}
+
+/* API(폼 제출) 로딩: 뒤가 비치는 딤드 오버레이 */
+.pending-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: grid;
+  place-items: center;
+  background: rgba(13, 27, 42, 0.35);
+}
+
+.pending-overlay .spinner {
+  width: 2.2em;
+  height: 2.2em;
+  color: #ffffff;
+  margin-right: 0;
+}

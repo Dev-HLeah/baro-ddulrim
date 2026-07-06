@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { MapPin, RotateCcw } from "lucide-react";
 import { submitContractorBidAction } from "@/app/actions";
+import { PendingOverlay } from "@/components/pending-overlay";
 import { SubmitButton } from "@/components/submit-button";
 import type { ContractorOpportunity } from "@/lib/contractor-api";
 import {
@@ -247,6 +248,7 @@ function BidDetail({
         </div>
       ) : null}
       <form action={submitBid} className="admin-form compact-form" key={opportunity.id}>
+        <PendingOverlay />
         <div className="form-grid">
           <label className="form-field">
             <span>견적 금액</span>

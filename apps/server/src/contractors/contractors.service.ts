@@ -73,6 +73,18 @@ export class ContractorsService {
     };
   }
 
+  /** 담당자 연락처만 수정한다. 그 외 계정/업체 정보는 이 경로로 바꿀 수 없다. */
+  async updateAccountPhone(account: AuthAccount, phone: string) {
+    const cleanPhone = this.requireCleanString(phone, "연락처를 입력해 주세요.");
+
+    await this.prisma.contractorAccount.update({
+      where: { id: account.id },
+      data: { phone: cleanPhone }
+    });
+
+    return this.getMyContext({ ...account, phone: cleanPhone });
+  }
+
   async registerCompany(
     account: AuthAccount,
     dto: RegisterContractorDto,

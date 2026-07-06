@@ -4,18 +4,24 @@ export type ContractorCompany = {
   id: string;
   companyName: string;
   representativeName: string;
+  businessNumber?: string;
+  managerName?: string;
   phone: string;
   email: string;
   status: string;
   statusReason?: string | null;
   serviceRegions: string[];
   serviceRadiusKm: number | null;
+  yearsOfExperience?: number | null;
+  specialties?: string[];
+  description?: string | null;
   address: string | null;
   latitude: number | null;
   longitude: number | null;
   bidCount: number;
   assignmentCount: number;
   workUpdateCount: number;
+  approvedAt?: string | null;
 };
 
 export type ContractorBid = {

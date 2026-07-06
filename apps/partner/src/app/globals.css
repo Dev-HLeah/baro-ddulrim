@@ -2351,3 +2351,118 @@ body {
     max-height: 300px;
   }
 }
+
+/* 업체 셸: 본문 + 우측 메뉴 */
+.contractor-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 200px;
+  gap: 16px;
+  align-items: start;
+}
+
+.contractor-shell-main {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.contractor-side-nav {
+  position: sticky;
+  top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px;
+  background: #ffffff;
+  border: 1px solid var(--bd-line-soft);
+  border-radius: 10px;
+}
+
+.contractor-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 12px;
+  border-radius: 8px;
+  color: #41546a;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.contractor-nav-item:hover {
+  background: #edf7fd;
+  color: var(--bd-primary);
+}
+
+.contractor-nav-item.active {
+  background: #e0f2fe;
+  color: var(--bd-primary-dark);
+}
+
+.contractor-nav-logout {
+  margin-top: 8px;
+  padding-top: 10px;
+  border-top: 1px solid var(--bd-line-soft);
+}
+
+.contractor-nav-logout .secondary-button {
+  width: 100%;
+}
+
+@media (max-width: 860px) {
+  .contractor-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .contractor-side-nav {
+    position: static;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .contractor-nav-logout {
+    margin: 0 0 0 auto;
+    padding: 0;
+    border: none;
+  }
+}
+
+/* 라우터 이동 로딩: 흰색 전체 화면 */
+.loading-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: #ffffff;
+}
+
+.loading-screen .spinner {
+  color: var(--bd-primary);
+}
+
+/* API(폼 제출) 로딩: 뒤가 비치는 딤드 오버레이 */
+.pending-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: grid;
+  place-items: center;
+  background: rgba(13, 27, 42, 0.35);
+}
+
+.pending-overlay .spinner {
+  width: 2.2em;
+  height: 2.2em;
+  color: #ffffff;
+  margin-right: 0;
+}
+
+.profile-note {
+  margin: 0 0 14px;
+  padding: 10px 14px;
+  background: #edf7fd;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #41546a;
+}

@@ -129,6 +129,30 @@ export async function registerContractorAction(formData: FormData) {
   redirect("/");
 }
 
+export async function updateContractorPhoneAction(formData: FormData) {
+  const phone = textValue(formData, "phone");
+
+  if (!phone) {
+    throw new Error("연락처를 입력해 주세요.");
+  }
+
+  const response = await fetch(`${apiBaseUrl}/contractors/me`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      ...(await authHeader()),
+    },
+    body: JSON.stringify({ phone }),
+  });
+
+  if (!response.ok) {
+    const message = await response.text();
+    throw new Error(message || "연락처를 저장하지 못했습니다.");
+  }
+
+  revalidatePath("/profile");
+}
+
 export async function logoutAction() {
   const supabase = await createSupabaseServerClient();
   await supabase.auth.signOut();

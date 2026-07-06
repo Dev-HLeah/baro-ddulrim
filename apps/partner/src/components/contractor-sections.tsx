@@ -14,6 +14,7 @@ import {
   submitWorkUpdateAction,
 } from "@/app/actions";
 import { LocationSearchInput } from "@/components/location-search-input";
+import { PendingOverlay } from "@/components/pending-overlay";
 import type {
   ContractorAssignment,
   ContractorBidWithReport,
@@ -88,6 +89,7 @@ export function ContractorRegistrationForm({
           </div>
         </div>
         <form action={registerContractorAction} className="admin-form">
+          <PendingOverlay />
           <div className="form-grid">
             <label className="form-field">
               <span>담당자 이름</span>
@@ -376,6 +378,7 @@ export function ContractorAssignmentsSection({
                 action={submitWorkUpdate}
                 className="admin-form compact-form"
               >
+                <PendingOverlay />
                 <div className="form-grid">
                   <label className="form-field">
                     <span>작업 상태</span>

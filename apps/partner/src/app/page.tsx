@@ -1,13 +1,11 @@
 import { redirect } from "next/navigation";
 import Image from "next/image";
-import { logoutAction } from "@/app/actions";
-import { SubmitButton } from "@/components/submit-button";
 import {
-  ContractorNavigationPanel,
   ContractorRejectedScreen,
   ContractorSummaryMetrics,
   ContractorWaitingScreen,
 } from "@/components/contractor-sections";
+import { ContractorShell } from "@/components/contractor-shell";
 import {
   getContractorAssignments,
   getContractorBids,
@@ -37,20 +35,17 @@ export default async function ContractorPage() {
             <h1 style={{ margin: 0 }}>업체 작업대</h1>
           </div>
         </div>
-        <form action={logoutAction}>
-          <SubmitButton className="secondary-button" type="submit">
-            로그아웃
-          </SubmitButton>
-        </form>
       </header>
 
-      {company.status === "REJECTED" ? (
-        <ContractorRejectedScreen company={company} />
-      ) : !isApprovedCompany(company) ? (
-        <ContractorWaitingScreen company={company} />
-      ) : (
-        <ApprovedWorkspace companyId={company.id} />
-      )}
+      <ContractorShell>
+        {company.status === "REJECTED" ? (
+          <ContractorRejectedScreen company={company} />
+        ) : !isApprovedCompany(company) ? (
+          <ContractorWaitingScreen company={company} />
+        ) : (
+          <ApprovedWorkspace companyId={company.id} />
+        )}
+      </ContractorShell>
     </main>
   );
 }
@@ -63,13 +58,10 @@ async function ApprovedWorkspace({ companyId }: { companyId: string }) {
   ]);
 
   return (
-    <>
-      <ContractorSummaryMetrics
-        assignments={assignments}
-        bids={bids}
-        opportunities={opportunities}
-      />
-      <ContractorNavigationPanel />
-    </>
+    <ContractorSummaryMetrics
+      assignments={assignments}
+      bids={bids}
+      opportunities={opportunities}
+    />
   );
 }
