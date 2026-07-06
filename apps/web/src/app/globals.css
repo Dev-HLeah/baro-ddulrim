@@ -2313,3 +2313,36 @@ body {
   font-size: 14px;
   cursor: pointer;
 }
+
+/* 체크박스/라디오: form-field의 텍스트 입력 규칙(min-height/포커스 링) 완전 리셋 */
+.form-field input[type="checkbox"],
+.form-field input[type="radio"],
+.admin-form input[type="checkbox"],
+.admin-form input[type="radio"],
+.report-form input[type="checkbox"],
+.report-form input[type="radio"],
+.checkbox-option input {
+  width: 18px;
+  height: 18px;
+  min-height: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  accent-color: var(--bd-primary);
+}
+
+.form-field input[type="checkbox"]:focus,
+.form-field input[type="radio"]:focus,
+.admin-form input[type="checkbox"]:focus,
+.admin-form input[type="radio"]:focus,
+.checkbox-option input:focus {
+  border: none;
+  box-shadow: none;
+}
+
+.form-field input[type="checkbox"]:focus-visible,
+.checkbox-option input:focus-visible {
+  outline: 2px solid var(--bd-primary);
+  outline-offset: 2px;
+}
