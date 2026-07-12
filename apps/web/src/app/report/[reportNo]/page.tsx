@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { CheckCircle2, FileSearch, KeyRound } from "lucide-react";
+import { CheckCircle2, FileSearch } from "lucide-react";
 import { CopyButton } from "@/components/copy-button";
 import { CustomerReportCard } from "@/components/customer-report-card";
+import { VerificationForm } from "@/components/verification-form";
 import { getCustomerReportByVerification } from "@/lib/customer-api";
 
 export default async function CustomerReportDetailPage({
@@ -70,23 +71,7 @@ export default async function CustomerReportDetailPage({
         {report ? (
           <CustomerReportCard report={report} />
         ) : (
-          <form className="lookup-form verification-panel">
-            <label htmlFor="verificationCode">확인번호</label>
-            <div className="input-row">
-              <KeyRound aria-hidden="true" size={18} />
-              <input
-                autoFocus
-                defaultValue={verificationCode ?? ""}
-                id="verificationCode"
-                name="verificationCode"
-                placeholder="345678"
-              />
-            </div>
-            <button className="secondary-button" type="submit">
-              <FileSearch aria-hidden="true" size={16} />
-              상세 확인
-            </button>
-          </form>
+          <VerificationForm initialCode={verificationCode} reportNo={reportNo} />
         )}
       </section>
 

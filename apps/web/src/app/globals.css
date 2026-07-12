@@ -2590,3 +2590,48 @@ body {
   color: #ffffff;
   margin-right: 0;
 }
+
+/* 조회 스켈레톤 — 결과 영역만 자리 표시로 대체 */
+.lookup-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.skeleton-block {
+  border-radius: 8px;
+  background: #d6e6f2;
+  animation: skeleton-pulse 1.2s ease-in-out infinite;
+}
+
+.skeleton-metric {
+  min-height: 88px;
+}
+
+.skeleton-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 18px;
+  background: #ffffff;
+  border: 1px solid var(--bd-line-soft);
+  border-radius: 10px;
+}
+
+.skeleton-line {
+  height: 16px;
+}
+
+.skeleton-line.w40 { width: 40%; }
+.skeleton-line.w60 { width: 60%; }
+.skeleton-line.w70 { width: 70%; }
+.skeleton-line.w90 { width: 90%; }
+
+.skeleton-steps {
+  height: 56px;
+}
+
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
