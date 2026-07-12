@@ -44,9 +44,12 @@ type KakaoMaps = {
     container: HTMLElement,
     options: { center: KakaoLatLng; level: number },
   ) => KakaoMap;
+  Size: new (width: number, height: number) => unknown;
+  MarkerImage: new (src: string, size: unknown) => unknown;
   Marker: new (options: {
     position: KakaoLatLng;
     title?: string;
+    image?: unknown;
   }) => KakaoMarker;
   InfoWindow: new (options: {
     content: string;
@@ -81,6 +84,20 @@ function markerAddress(marker: ReportMapMarker) {
   return (
     marker.placeName ?? marker.roadAddressText ?? marker.addressText ?? "-"
   );
+}
+
+// 범례(긴급/급함/일반/완료)와 동일한 색의 마커 이미지
+const markerToneColors: Record<string, string> = {
+  emergency: "#dc2626",
+  urgent: "#d97706",
+  normal: "#0ea5e9",
+  resolved: "#15803d",
+};
+
+function markerImageSrc(tone: string) {
+  const color = markerToneColors[tone] ?? markerToneColors.normal;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="30" height="40" viewBox="0 0 30 40"><path d="M15 0C6.7 0 0 6.7 0 15c0 10.5 15 25 15 25s15-14.5 15-25C30 6.7 23.3 0 15 0z" fill="${color}"/><circle cx="15" cy="14" r="6" fill="#ffffff"/></svg>`;
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 }
 
 function markerTone(marker: ReportMapMarker) {
@@ -325,6 +342,10 @@ export function ReportMap({
           const kakaoMarker = new kakaoMaps.Marker({
             position,
             title: marker.summary ?? marker.reportNo,
+            image: new kakaoMaps.MarkerImage(
+              markerImageSrc(markerTone(marker)),
+              new kakaoMaps.Size(30, 40),
+            ),
           });
           const infoWindow = new kakaoMaps.InfoWindow({
             content: markerInfoContent(marker),

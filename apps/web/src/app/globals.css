@@ -2635,3 +2635,32 @@ body {
   0%, 100% { opacity: 0.55; }
   50% { opacity: 1; }
 }
+
+/* 위치 검색 모달: 버튼 줄바꿈 방지 */
+.modal-search-row .primary-button,
+.modal-search-row .secondary-button {
+  white-space: nowrap;
+  flex-shrink: 0;
+  padding: 0 18px;
+}
+
+/* 딤드 오버레이 안내 문구 */
+.pending-overlay {
+  flex-direction: column;
+  gap: 12px;
+}
+
+.pending-overlay-message {
+  margin: 0;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+/* 모바일: 신고 제출 버튼 풀폭 */
+@media (max-width: 640px) {
+  .report-form .primary-button {
+    width: 100%;
+    justify-content: center;
+  }
+}

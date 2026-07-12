@@ -27,6 +27,7 @@ export function LocationSearchInput() {
   const [candidates, setCandidates] = useState<LocationCandidate[]>([]);
   const [selected, setSelected] = useState<LocationCandidate | null>(null);
   const [isSearching, setIsSearching] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const addressValue = selected ? displayAddress(selected) : "";
   const selectedSummary = useMemo(() => {
@@ -48,6 +49,7 @@ export function LocationSearchInput() {
     }
 
     setIsSearching(true);
+    setHasSearched(true);
     setError(null);
 
     try {
@@ -186,8 +188,15 @@ export function LocationSearchInput() {
                   ) : null}
                 </button>
               ))}
-              {!isSearching && candidates.length === 0 && !error ? (
-                <p className="empty-text">검색 결과가 없습니다.</p>
+              {!isSearching && !hasSearched && candidates.length === 0 && !error ? (
+                <p className="empty-text">
+                  찾는 곳의 주소나 건물 이름을 입력하고 검색을 눌러 주세요.
+                </p>
+              ) : null}
+              {!isSearching && hasSearched && candidates.length === 0 && !error ? (
+                <p className="empty-text">
+                  검색 결과가 없습니다. 다른 검색어로 다시 시도해 보세요.
+                </p>
               ) : null}
               {isSearching ? (
                 <p className="empty-text">검색 중입니다.</p>

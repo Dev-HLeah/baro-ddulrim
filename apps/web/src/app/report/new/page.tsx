@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight, FileSearch, Phone } from "lucide-react";
 import { createCustomerReportAction } from "@/app/actions";
 import { LocationSearchInput } from "@/components/location-search-input";
+import { PendingOverlay } from "@/components/pending-overlay";
 import { ReportPhotoUploader } from "@/components/report-photo-uploader";
 import { SubmitButton } from "@/components/submit-button";
 import Image from "next/image";
@@ -28,6 +29,7 @@ export default function NewReportPage() {
         </div>
 
         <form action={createCustomerReportAction} className="report-form">
+          <PendingOverlay message="신고를 정리하고 있어요. 잠시만 기다려 주세요." />
           <label htmlFor="phone">연락처</label>
           <div className="input-row">
             <Phone aria-hidden="true" size={18} />
