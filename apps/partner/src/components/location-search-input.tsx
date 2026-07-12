@@ -1,7 +1,7 @@
 "use client";
 
 import { MapPin, Search, X } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type LocationCandidate = {
   id: string;
@@ -24,12 +24,15 @@ function displayAddress(candidate: LocationCandidate) {
 export function LocationSearchInput() {
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const [draft, setDraft] = useState("");
+  const [autoSearch, setAutoSearch] = useState(false);
   const [candidates, setCandidates] = useState<LocationCandidate[]>([]);
   const [selected, setSelected] = useState<LocationCandidate | null>(null);
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const addressValue = selected ? displayAddress(selected) : "";
+  // 선택된 주소가 있으면 그 값을, 없으면 직접 입력 중인 텍스트를 보여준다.
+  const addressValue = selected ? displayAddress(selected) : draft;
   const selectedSummary = useMemo(() => {
     if (!selected) {
       return null;
@@ -84,6 +87,26 @@ export function LocationSearchInput() {
     setIsOpen(false);
   }
 
+  // 주소칸에 입력한 검색어를 들고 모달을 열면 바로 검색한다.
+  function openSearch() {
+    const carried = draft.trim();
+
+    if (!selected && carried) {
+      setQuery(carried);
+      setAutoSearch(true);
+    }
+
+    setIsOpen(true);
+  }
+
+  useEffect(() => {
+    if (isOpen && autoSearch) {
+      setAutoSearch(false);
+      void searchLocations();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoSearch, isOpen]);
+
   return (
     <div className="location-search-field">
       <label htmlFor="address">주소</label>
@@ -94,17 +117,23 @@ export function LocationSearchInput() {
         <input
           id="address"
           name="address"
-          onClick={() => setIsOpen(true)}
-          onFocus={() => setIsOpen(true)}
-          placeholder="주소, 동 이름, 상호명"
-          readOnly
+          onChange={(event) => {
+            setDraft(event.target.value);
+
+            if (selected) {
+              setSelected(null);
+            }
+          }}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") {
+              event.preventDefault();
+              openSearch();
+            }
+          }}
+          placeholder="주소, 동 이름, 상호명 입력 후 검색"
           value={addressValue}
         />
-        <button
-          className="secondary-button"
-          onClick={() => setIsOpen(true)}
-          type="button"
-        >
+        <button className="secondary-button" onClick={openSearch} type="button">
           검색
         </button>
       </div>
