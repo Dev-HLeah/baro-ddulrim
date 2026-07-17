@@ -334,7 +334,10 @@
     .foot img { height: 30px; }
     .foot .links { display: flex; gap: 20px; font-size: 14px; font-weight: 600; color: var(--muted); }
     .foot .copy { margin-left: auto; font-size: 13px; color: #94a9ba; }
-    @media (max-width: 640px) { .foot .copy { margin-left: 0; } }
+    .biz-info { margin-top: 18px; font-size: 13px; color: var(--muted); line-height: 1.9; }
+    .biz-info b { color: var(--ink); font-weight: 700; }
+    .biz-info .sep { margin: 0 10px; color: #c3d4e0; }
+    @media (max-width: 640px) { .foot .copy { margin-left: 0; } .biz-info .sep { display: block; visibility: hidden; height: 0; margin: 0; } }
 
     /* ---------- reveal ---------- */
     .reveal { opacity: 0; transform: translateY(28px); transition: opacity .7s ease, transform .7s ease; }
@@ -596,7 +599,10 @@
         <a href="http://localhost:3001/login">업체 파트너</a>
       </div>
       -->
-      <span class="copy">© 2026 바로 뚫림. All rights reserved.</span>
+      <span class="copy">© 2026 어반클라이밋에이아이. All rights reserved.</span>
+    </div>
+    <div class="wrap biz-info">
+      <b>어반클라이밋에이아이</b><span class="sep">|</span>대표 이재욱<span class="sep">|</span>사업자등록번호 508-09-73577
     </div>
   </footer>
 
