@@ -74,7 +74,7 @@
       transition: transform .2s, box-shadow .2s;
     }
     .nav-cta:hover { transform: translateY(-2px); box-shadow: 0 16px 30px -8px rgba(30, 155, 215, .6); }
-    @media (max-width: 860px) { .nav-links { display: none; } .nav-cta { margin-left: auto; } }
+    @media (max-width: 940px) { .nav-links { display: none; } .nav-cta { margin-left: auto; } }
 
     /* ---------- hero ---------- */
     .hero { padding: 172px 0 96px; overflow: visible; }
@@ -293,18 +293,31 @@
     .log-step.done { color: var(--ink); }
     @media (max-width: 540px) { .log-mock { grid-template-columns: repeat(3, 1fr); row-gap: 20px; } .log-step:nth-child(3)::after { display:none; } }
 
-    /* ---------- partner ---------- */
-    .partner .blob.b1 { width: 480px; height: 480px; background: #ffeeba; bottom: -180px; left: -200px; opacity: .5; }
-    .partner-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 54px; align-items: center; position: relative; z-index: 1; }
-    .partner-shot { border-radius: var(--radius); overflow: hidden; border: 1px solid var(--line); box-shadow: var(--shadow); transform: rotate(-1.5deg); }
-    .partner h2 { font-size: clamp(26px, 3.2vw, 36px); font-weight: 850; letter-spacing: -0.02em; line-height: 1.3; margin-bottom: 14px; }
-    .partner .desc { color: var(--muted); font-size: 16.5px; margin-bottom: 26px; }
-    .perk { display: flex; gap: 14px; padding: 14px 0; border-bottom: 1px dashed var(--line); }
-    .perk:last-of-type { border-bottom: 0; margin-bottom: 8px; }
-    .perk .ico { width: 42px; height: 42px; flex: none; border-radius: 13px; background: var(--blue-soft); display: grid; place-items: center; font-size: 20px; }
-    .perk b { font-size: 15.5px; font-weight: 800; display: block; }
-    .perk span { font-size: 14px; color: var(--muted); }
-    @media (max-width: 920px) { .partner-grid { grid-template-columns: 1fr; } .partner-shot { order: 2; } }
+    /* ---------- doors (티저) ---------- */
+    .doors { background: #fff; padding: 92px 0; }
+    .doors .blob.b1 { width: 420px; height: 420px; background: #d8f0ff; top: -80px; left: -180px; opacity: .5; }
+    .door-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; position: relative; z-index: 1; }
+    .door {
+      display: block; border-radius: var(--radius); padding: 36px 34px;
+      border: 1px solid var(--line); background: var(--bg);
+      transition: transform .25s, box-shadow .25s, border-color .25s;
+      position: relative; overflow: hidden;
+    }
+    .door:hover { transform: translateY(-6px); box-shadow: var(--shadow); border-color: #bfe6fa; }
+    .door .ico { width: 54px; height: 54px; border-radius: 17px; display: grid; place-items: center; font-size: 26px; background: var(--blue-soft); margin-bottom: 18px; }
+    .door.gold .ico { background: #fff6dd; }
+    .door .kicker { font-size: 12.5px; font-weight: 900; letter-spacing: .06em; color: var(--blue-deep); }
+    .door.gold .kicker { color: var(--orange); }
+    .door h3 { margin: 8px 0 10px; font-size: 22px; font-weight: 850; letter-spacing: -0.02em; line-height: 1.35; }
+    .door p { font-size: 15px; color: var(--muted); margin-bottom: 18px; }
+    .door ul { list-style: none; display: flex; flex-direction: column; gap: 7px; margin-bottom: 22px; }
+    .door li { position: relative; padding-left: 17px; font-size: 14px; color: var(--muted); font-weight: 600; }
+    .door li::before { content: ""; position: absolute; left: 0; top: 8px; width: 6px; height: 6px; border-radius: 50%; background: var(--blue); }
+    .door.gold li::before { background: var(--yellow); }
+    .door .go { font-size: 15.5px; font-weight: 850; color: var(--blue-deep); display: inline-flex; align-items: center; gap: 7px; }
+    .door.gold .go { color: var(--orange); }
+    .door:hover .go { gap: 12px; }
+    @media (max-width: 860px) { .door-grid { grid-template-columns: 1fr; } }
 
     /* ---------- final CTA ---------- */
     .final { padding: 120px 0; }
@@ -332,7 +345,7 @@
     footer { border-top: 1px solid var(--line); background: #fff; padding: 40px 0 48px; }
     .foot { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
     .foot img { height: 30px; }
-    .foot .links { display: flex; gap: 20px; font-size: 14px; font-weight: 600; color: var(--muted); }
+    .foot .links { display: flex; gap: 20px; font-size: 14px; font-weight: 600; color: var(--muted); flex-wrap: wrap; }
     .foot .copy { margin-left: auto; font-size: 13px; color: #94a9ba; }
     .biz-info { margin-top: 18px; font-size: 13px; color: var(--muted); line-height: 1.9; }
     .biz-info b { color: var(--ink); font-weight: 700; }
@@ -360,7 +373,8 @@
       <nav class="nav-links">
         <a href="#how">이용 방법</a>
         <a href="#features">주요 기능</a>
-        <a href="#partner">업체 파트너</a>
+        <a href="public.html">공공·지자체</a>
+        <a href="partners.html">협력사 모집</a>
       </nav>
       <!-- 서비스 오픈 전 비노출: 신고하기 CTA
       <a class="nav-cta" href="http://localhost:3000/report/new">지금 신고하기</a>
@@ -546,26 +560,42 @@
     </div>
   </section>
 
-  <!-- PARTNER -->
-  <section class="partner" id="partner">
+  <!-- DOORS : 다른 두 독자를 위한 입구 -->
+  <section class="doors">
     <div class="blob b1"></div>
-    <div class="wrap partner-grid">
-      <div class="partner-shot reveal">
-        <img src="assets/partner-login.png" alt="업체 파트너 로그인 화면" loading="lazy" />
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <span class="chip">MORE</span>
+        <h2>시민 신고만 하는 곳이 아닙니다</h2>
+        <p>「바로 뚫림」은 의정부를 시작으로 경기 전역, 나아가 전국의 생활배수를 예방형으로 관리합니다.</p>
       </div>
-      <div class="reveal">
-        <span class="chip">FOR PARTNERS</span>
-        <h2>배수 업체 사장님,<br />일감이 동네에서 알아서 찾아옵니다</h2>
-        <p class="desc">영업 없이도 검수된 신고가 지역 기준으로 공개됩니다. 카카오·구글 계정으로 간편하게 시작하세요.</p>
-        <div class="perk"><span class="ico">📍</span><div><b>지역 기반 신고 공개</b><span>내 활동 지역의 검수된 신고만 골라 확인</span></div></div>
-        <div class="perk"><span class="ico">⚖️</span><div><b>공정한 입찰 수주</b><span>광고비 경쟁이 아닌 입찰로 투명하게 배정</span></div></div>
-        <div class="perk"><span class="ico">🗂️</span><div><b>작업 이력 관리</b><span>배정·진행·완료 기록이 자동으로 쌓여 신뢰 자산으로</span></div></div>
-        <!-- 서비스 오픈 전 비노출: 업체 가입/로그인 CTA
-        <div class="cta-row" style="margin-top:22px">
-          <a class="btn btn-primary" href="http://localhost:3001/signup">업체 회원가입</a>
-          <a class="btn btn-ghost" href="http://localhost:3001/login">업체 로그인</a>
-        </div>
-        -->
+
+      <div class="door-grid">
+        <a class="door reveal" href="public.html">
+          <div class="ico">🏛️</div>
+          <span class="kicker">FOR PUBLIC SECTOR</span>
+          <h3>지자체·공공기관<br />담당자이신가요?</h3>
+          <p>막힌 뒤 부르는 사후 수리가 아니라, 우기 전에 어디를 먼저 봐야 할지 알려주는 예방형 관리 체계입니다.</p>
+          <ul>
+            <li>QR 자산화 · 내시경 사전진단 · 배수건전성 카드</li>
+            <li>연간 예방관리 계약과 관리자 대시보드</li>
+            <li>의정부 공공시설 실증 추진 중 · 경기 전역 확산</li>
+          </ul>
+          <span class="go">공공·지자체 안내 보기 →</span>
+        </a>
+
+        <a class="door gold reveal" href="partners.html">
+          <div class="ico">🔧</div>
+          <span class="kicker">FOR PARTNERS</span>
+          <h3>배수·설비 업체<br />사장님이신가요?</h3>
+          <p>전국에서 함께 일할 지역 파트너사를 찾고 있습니다. 제안은 비공개로 접수되어 대표이사가 직접 검토합니다.</p>
+          <ul>
+            <li>광고비 경쟁이 아닌 지역 기반 일감 배정</li>
+            <li>단발 출동이 아닌 연간 예방관리 반복 매출</li>
+            <li>작업 이력이 쌓여 공공 입찰 레퍼런스로</li>
+          </ul>
+          <span class="go">협력사 모집 안내 보기 →</span>
+        </a>
       </div>
     </div>
   </section>
@@ -591,18 +621,21 @@
   <footer>
     <div class="wrap foot">
       <img src="assets/logo-text.png" alt="바로 뚫림" />
-      <!-- 서비스 오픈 전 비노출: 앱 링크
       <div class="links">
+        <!-- 서비스 오픈 전 비노출: 앱 링크
         <a href="http://localhost:3000/report/new">신고하기</a>
         <a href="http://localhost:3000/report/lookup">신고 조회</a>
         <a href="http://localhost:3000/map">지도 현황</a>
         <a href="http://localhost:3001/login">업체 파트너</a>
+        -->
+        <a href="public.html">공공·지자체</a>
+        <a href="partners.html">협력사 모집</a>
       </div>
-      -->
-      <span class="copy">© 2026 어반클라이밋에이아이. All rights reserved.</span>
+      <span class="copy">© 2026 주식회사 어반클라이밋에이아이. All rights reserved.</span>
     </div>
     <div class="wrap biz-info">
-      <b>어반클라이밋에이아이</b><span class="sep">|</span>대표 이재욱<span class="sep">|</span>사업자등록번호 508-09-73577
+      <b>주식회사 어반클라이밋에이아이</b><span class="sep">|</span>대표이사 이재욱<span class="sep">|</span>사업자등록번호 157-88-03859<br />
+      본점 경기도 성남시 수정구 산성대로283번길 6-17, 3층 3113호(신흥동)<span class="sep">|</span><a href="tel:0260830020">02-6083-0020</a><span class="sep">|</span><a href="mailto:myhero.lee@gmail.com">myhero.lee@gmail.com</a>
     </div>
   </footer>
 
