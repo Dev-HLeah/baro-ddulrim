@@ -452,13 +452,12 @@
 
   <script>
   /* =========================================================================
-     ⚙️ 설정 — 여기 한 줄만 바꾸면 게시판이 살아납니다.
-     Google Apps Script를 "웹 앱"으로 배포하면 아래 같은 주소가 나옵니다.
-       https://script.google.com/macros/s/AKfycb.....................​/exec
-     그 주소를 그대로 따옴표 안에 붙여넣으세요.
-     (배포 전에는 빈 문자열로 두시면, 폼이 자동으로 이메일 접수로 대체됩니다.)
+     ⚙️ 설정 — 접수 현황 게시판 API (바로 뚫림 서버)
+     GET {API_BASE}/contractors/public-board 가
+     { items: [{ no, company, region, sector, date, status }] } 를 반환합니다.
+     (빈 문자열로 두면 게시판 대신 안내 문구가 표시됩니다.)
      ========================================================================= */
-  const ENDPOINT = "";
+  const API_BASE = "https://baro-ddulrimserver-production.up.railway.app";
 
   const ADMIN_EMAIL = "myhero.lee@gmail.com";
 
@@ -507,7 +506,7 @@
   }
 
   async function loadBoard() {
-    if (!ENDPOINT) {
+    if (!API_BASE) {
       boardBody.innerHTML =
         '<tr><td colspan="6" class="board-empty">' +
         '<b style="color:var(--ink);font-size:16px">협력 제안은 정상적으로 접수되고 있습니다.</b><br>' +
@@ -518,7 +517,8 @@
       return;
     }
     try {
-      const res = await fetch(ENDPOINT + "?action=list");
+      const res = await fetch(API_BASE + "/contractors/public-board");
+      if (!res.ok) throw new Error("HTTP " + res.status);
       const out = await res.json();
       const items = out.items || [];
       renderBoard(items);
