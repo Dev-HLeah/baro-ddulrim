@@ -310,7 +310,7 @@
         <h2>제안부터 협력까지</h2>
       </div>
       <div class="proc">
-        <div class="proc-card reveal"><span class="proc-num">01</span><h3>제안 등록</h3><p>아래 양식을 작성해 주시면 접수번호가 발급됩니다. 내용은 비공개입니다.</p><span class="when">즉시</span></div>
+        <div class="proc-card reveal"><span class="proc-num">01</span><h3>제안 등록</h3><p>업체 파트너 가입 페이지에서 제안을 등록하시면 접수번호가 발급됩니다. 내용은 비공개입니다.</p><span class="when">즉시</span></div>
         <div class="proc-card reveal"><span class="proc-num">02</span><h3>대표이사 검토</h3><p>지역·장비·인력·실적을 기준으로 대표이사가 직접 검토합니다.</p><span class="when">영업일 3~5일</span></div>
         <div class="proc-card reveal"><span class="proc-num">03</span><h3>통화·미팅</h3><p>현장 여건과 협력 형태를 확인하기 위해 연락드립니다.</p><span class="when">검토 후</span></div>
         <div class="proc-card reveal"><span class="proc-num">04</span><h3>파트너 등록</h3><p>업체 계정 개설 후 지역 신고와 점검 물량 배정이 시작됩니다.</p><span class="when">협의 완료 시</span></div>
@@ -325,7 +325,12 @@
       <div class="sec-head center reveal">
         <span class="chip">APPLY</span>
         <h2>협력 제안 등록</h2>
-        <p>작성해 주신 내용은 공개되지 않습니다. 게시판에는 지역·업종·접수일·상태만 표시됩니다.</p>
+        <p>
+          협력 제안은 업체 파트너 페이지에서 접수합니다.
+          회사 정보와 활동 지역, 보유 장비·수행 가능 업무, 제안 내용을 등록하시면
+          접수번호가 발급되고 대표이사가 직접 검토 후 연락드립니다.
+          작성해 주신 내용은 공개되지 않으며, 게시판에는 지역·업종·접수일·상태만 표시됩니다.
+        </p>
       </div>
 
       <div class="privacy-note">
@@ -336,185 +341,10 @@
         </div>
       </div>
 
-      <form class="form-card reveal" id="partnerForm" novalidate>
-
-        <div class="fgroup">
-          <h3>1. 회사 정보</h3>
-          <div class="frow">
-            <div class="field" data-req>
-              <label>회사명(상호)<span class="req">*</span></label>
-              <input type="text" name="company" placeholder="예) 한빛설비" autocomplete="organization">
-              <span class="err">회사명을 입력해 주세요.</span>
-            </div>
-            <div class="field" data-req>
-              <label>대표자명<span class="req">*</span></label>
-              <input type="text" name="ceo" placeholder="예) 홍길동">
-              <span class="err">대표자명을 입력해 주세요.</span>
-            </div>
-          </div>
-          <div class="frow three">
-            <div class="field">
-              <label>사업자등록번호<span class="hint">선택</span></label>
-              <input type="text" name="bizno" placeholder="000-00-00000" inputmode="numeric">
-            </div>
-            <div class="field">
-              <label>업력<span class="hint">선택</span></label>
-              <input type="text" name="years" placeholder="예) 12년">
-            </div>
-            <div class="field">
-              <label>상시 인력<span class="hint">선택</span></label>
-              <input type="text" name="staff" placeholder="예) 5명">
-            </div>
-          </div>
-        </div>
-
-        <div class="fgroup">
-          <h3>2. 담당자 연락처</h3>
-          <div class="frow three">
-            <div class="field" data-req>
-              <label>담당자명<span class="req">*</span></label>
-              <input type="text" name="manager" placeholder="예) 김철수" autocomplete="name">
-              <span class="err">담당자명을 입력해 주세요.</span>
-            </div>
-            <div class="field" data-req>
-              <label>연락처<span class="req">*</span></label>
-              <input type="tel" name="phone" placeholder="010-0000-0000" autocomplete="tel">
-              <span class="err">연락처를 입력해 주세요.</span>
-            </div>
-            <div class="field" data-req data-type="email">
-              <label>이메일<span class="req">*</span></label>
-              <input type="email" name="email" placeholder="name@company.com" autocomplete="email">
-              <span class="err">올바른 이메일 주소를 입력해 주세요.</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="fgroup">
-          <h3>3. 활동 지역 · 업종</h3>
-          <div class="frow three">
-            <div class="field" data-req>
-              <label>시·도<span class="req">*</span></label>
-              <select name="sido">
-                <option value="">선택하세요</option>
-                <option>경기</option><option>서울</option><option>인천</option>
-                <option>강원</option><option>충북</option><option>충남</option><option>대전</option><option>세종</option>
-                <option>전북</option><option>전남</option><option>광주</option>
-                <option>경북</option><option>경남</option><option>대구</option><option>울산</option><option>부산</option>
-                <option>제주</option>
-              </select>
-              <span class="err">시·도를 선택해 주세요.</span>
-            </div>
-            <div class="field" data-req>
-              <label>시·군·구<span class="req">*</span></label>
-              <input type="text" name="sigungu" placeholder="예) 의정부시">
-              <span class="err">시·군·구를 입력해 주세요.</span>
-            </div>
-            <div class="field" data-req>
-              <label>주요 업종<span class="req">*</span></label>
-              <select name="sector">
-                <option value="">선택하세요</option>
-                <option>설비·배관</option>
-                <option>준설·청소</option>
-                <option>하수도 공사</option>
-                <option>시설관리·위탁</option>
-                <option>방수·토목</option>
-                <option>기타</option>
-              </select>
-              <span class="err">업종을 선택해 주세요.</span>
-            </div>
-          </div>
-          <div class="frow one">
-            <div class="field">
-              <label>출동 가능 반경<span class="hint">선택</span></label>
-              <input type="text" name="radius" placeholder="예) 의정부 전역 및 인접 시·군 30km 이내, 평균 40분 내 도착">
-            </div>
-          </div>
-        </div>
-
-        <div class="fgroup">
-          <h3>4. 보유 역량</h3>
-          <div class="frow one">
-            <div class="field">
-              <label>보유 장비<span class="hint">해당하는 것 모두 선택</span></label>
-              <div class="checks" data-group="equip">
-                <label><input type="checkbox" value="고압세척차">고압세척차</label>
-                <label><input type="checkbox" value="준설차">준설차</label>
-                <label><input type="checkbox" value="관로 CCTV">관로 CCTV</label>
-                <label><input type="checkbox" value="내시경 장비">내시경 장비</label>
-                <label><input type="checkbox" value="스네이크/전동장비">스네이크·전동장비</label>
-                <label><input type="checkbox" value="흡입식 진공차">흡입식 진공차</label>
-                <label><input type="checkbox" value="화물/작업차량">화물·작업차량</label>
-              </div>
-            </div>
-          </div>
-          <div class="frow one">
-            <div class="field">
-              <label>수행 가능 업무<span class="hint">해당하는 것 모두 선택</span></label>
-              <div class="checks" data-group="work">
-                <label><input type="checkbox" value="긴급출동">긴급출동</label>
-                <label><input type="checkbox" value="준설">준설</label>
-                <label><input type="checkbox" value="배관 보수">배관 보수</label>
-                <label><input type="checkbox" value="내시경 진단">내시경 진단</label>
-                <label><input type="checkbox" value="정기 점검">정기 점검</label>
-                <label><input type="checkbox" value="야간·주말 대응">야간·주말 대응</label>
-                <label><input type="checkbox" value="공공기관 시공 실적 보유">공공기관 시공 실적 보유</label>
-              </div>
-            </div>
-          </div>
-          <div class="frow">
-            <div class="field">
-              <label>희망 협력 형태<span class="hint">선택</span></label>
-              <select name="type">
-                <option value="">선택하세요</option>
-                <option>지역 배정 파트너 (건별 수행)</option>
-                <option>지역 총판·거점 파트너</option>
-                <option>공공 정기점검 수급</option>
-                <option>장비·인력 협력</option>
-                <option>기타 (제안 내용에 기재)</option>
-              </select>
-            </div>
-            <div class="field">
-              <label>배상책임보험 가입<span class="hint">선택</span></label>
-              <select name="insurance">
-                <option value="">선택하세요</option>
-                <option>가입</option>
-                <option>미가입</option>
-                <option>확인 필요</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <div class="fgroup">
-          <h3>5. 제안 내용</h3>
-          <div class="frow one">
-            <div class="field" data-req>
-              <label>협력 제안 및 소개<span class="req">*</span></label>
-              <textarea name="message" placeholder="회사 소개, 주요 실적, 어떤 방식으로 협력하고 싶은지 자유롭게 적어주세요.&#10;&#10;예시)&#10;- 의정부·양주 일대에서 12년간 상가·아파트 배관 준설을 해왔습니다.&#10;- 고압세척차 2대, 관로 CCTV 1식 보유. 상시 인력 4명.&#10;- 관공서 하수도 준설 용역 3건 수행 경험이 있습니다.&#10;- 공공시설 정기점검 물량을 안정적으로 받고 싶습니다."></textarea>
-              <span class="err">제안 내용을 입력해 주세요.</span>
-            </div>
-          </div>
-          <div class="frow one">
-            <div class="field" data-req data-check>
-              <label class="agree">
-                <input type="checkbox" name="agree">
-                <span><b>개인정보 수집·이용에 동의합니다.</b><br>
-                수집 항목: 회사명, 대표자명, 담당자명, 연락처, 이메일, 사업자등록번호, 활동지역, 제안 내용 ·
-                이용 목적: 협력업체 검토 및 연락 · 보유 기간: 검토 종료 후 3년(이후 파기).
-                동의를 거부하실 수 있으나 이 경우 협력 제안 접수가 불가합니다.</span>
-              </label>
-              <span class="err">개인정보 수집·이용에 동의해 주세요.</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="form-actions">
-          <button type="submit" class="btn btn-primary" id="submitBtn">협력 제안 등록하기 →</button>
-          <span class="note" id="submitNote">등록 즉시 접수번호가 발급되고 대표이사에게 알림이 전송됩니다.</span>
-        </div>
-
-        <div class="formmsg" id="formMsg"></div>
-      </form>
+      <div class="cta-row reveal" style="justify-content:center">
+        <a class="btn btn-primary" href="https://partner.hasugulab.com/signup">협력 제안 등록하러 가기 →</a>
+        <a class="btn btn-ghost" href="mailto:myhero.lee@gmail.com?subject=%5B%ED%98%91%EB%A0%A5%EC%97%85%EC%B2%B4%20%EC%A0%9C%EC%95%88%5D%20">✉️ 메일로 먼저 문의</a>
+      </div>
     </div>
   </section>
 
@@ -590,7 +420,7 @@
       </div>
 
       <div style="text-align:center;margin-top:40px" class="reveal">
-        <p style="color:var(--muted);font-size:15px;margin-bottom:16px">양식 작성이 어려우시면 전화나 메일로 먼저 연락 주셔도 됩니다.</p>
+        <p style="color:var(--muted);font-size:15px;margin-bottom:16px">온라인 등록이 어려우시면 전화나 메일로 먼저 연락 주셔도 됩니다.</p>
         <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
           <a class="btn btn-ghost" href="tel:0260830020">📞 02-6083-0020</a>
           <a class="btn btn-ghost" href="mailto:myhero.lee@gmail.com?subject=%5B%ED%98%91%EB%A0%A5%EC%97%85%EC%B2%B4%20%EC%A0%9C%EC%95%88%5D%20">✉️ myhero.lee@gmail.com</a>
@@ -644,138 +474,6 @@
     io.observe(el);
   });
 
-  /* ---------- 폼 검증 ---------- */
-  const form = document.getElementById("partnerForm");
-  const msg = document.getElementById("formMsg");
-  const submitBtn = document.getElementById("submitBtn");
-
-  function validate() {
-    let ok = true;
-    form.querySelectorAll(".field[data-req]").forEach((f) => {
-      const input = f.querySelector("input, select, textarea");
-      let valid;
-      if (f.hasAttribute("data-check")) {
-        valid = input.checked;
-      } else if (f.dataset.type === "email") {
-        valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.value.trim());
-      } else {
-        valid = input.value.trim() !== "";
-      }
-      f.classList.toggle("invalid", !valid);
-      if (!valid && ok) { input.focus({ preventScroll: true }); input.scrollIntoView({ block: "center", behavior: "smooth" }); }
-      if (!valid) ok = false;
-    });
-    return ok;
-  }
-  form.addEventListener("input", (e) => {
-    const f = e.target.closest(".field[data-req]");
-    if (f && f.classList.contains("invalid")) validate();
-  });
-
-  function collect() {
-    const get = (n) => (form.querySelector(`[name="${n}"]`)?.value || "").trim();
-    const checks = (g) => [...form.querySelectorAll(`.checks[data-group="${g}"] input:checked`)].map((i) => i.value).join(", ");
-    return {
-      company: get("company"),
-      ceo: get("ceo"),
-      bizno: get("bizno"),
-      years: get("years"),
-      staff: get("staff"),
-      manager: get("manager"),
-      phone: get("phone"),
-      email: get("email"),
-      sido: get("sido"),
-      sigungu: get("sigungu"),
-      sector: get("sector"),
-      radius: get("radius"),
-      equip: checks("equip"),
-      work: checks("work"),
-      type: get("type"),
-      insurance: get("insurance"),
-      message: get("message"),
-      agree: form.querySelector('[name="agree"]').checked ? "동의" : "",
-      page: location.href
-    };
-  }
-
-  function mailFallback(d) {
-    const body =
-`[협력업체 제안]
-
-■ 회사 정보
-회사명: ${d.company}
-대표자: ${d.ceo}
-사업자등록번호: ${d.bizno}
-업력: ${d.years} / 상시 인력: ${d.staff}
-
-■ 담당자
-담당자: ${d.manager}
-연락처: ${d.phone}
-이메일: ${d.email}
-
-■ 활동 지역·업종
-지역: ${d.sido} ${d.sigungu}
-업종: ${d.sector}
-출동 반경: ${d.radius}
-
-■ 보유 역량
-장비: ${d.equip}
-가능 업무: ${d.work}
-희망 협력 형태: ${d.type}
-배상책임보험: ${d.insurance}
-
-■ 제안 내용
-${d.message}
-
-(개인정보 수집·이용 동의: ${d.agree})`;
-    return `mailto:${ADMIN_EMAIL}?subject=${encodeURIComponent("[협력업체 제안] " + d.company + " (" + d.sido + " " + d.sigungu + ")")}&body=${encodeURIComponent(body)}`;
-  }
-
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    msg.className = "formmsg";
-    if (!validate()) return;
-
-    const data = collect();
-    submitBtn.disabled = true;
-    submitBtn.textContent = "등록하는 중…";
-
-    if (!ENDPOINT) {
-      // 백엔드 미설정 시: 메일 프로그램으로 대체
-      msg.className = "formmsg ok";
-      msg.innerHTML = "작성해 주셔서 감사합니다. 메일 작성 창이 열립니다. 내용을 확인하시고 <b>보내기</b>를 눌러주세요.<br>창이 열리지 않으면 <b>" + ADMIN_EMAIL + "</b> 으로 직접 보내주셔도 됩니다.";
-      location.href = mailFallback(data);
-      submitBtn.disabled = false;
-      submitBtn.textContent = "협력 제안 등록하기 →";
-      return;
-    }
-
-    try {
-      const res = await fetch(ENDPOINT, {
-        method: "POST",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify({ action: "submit", data })
-      });
-      const out = await res.json();
-      if (!out.ok) throw new Error(out.error || "server");
-
-      msg.className = "formmsg ok";
-      msg.innerHTML = `제안이 정상 접수되었습니다. 접수번호는 <b>${out.no}</b> 입니다.<br>
-        영업일 기준 3~5일 내 검토 후 <b>${data.phone}</b> 또는 <b>${data.email}</b> 로 연락드리겠습니다.
-        아래 접수 현황에서 접수번호로 진행 상태를 확인하실 수 있습니다.`;
-      form.reset();
-      loadBoard();
-      setTimeout(() => document.getElementById("board").scrollIntoView({ behavior: "smooth" }), 1200);
-    } catch (err) {
-      msg.className = "formmsg bad";
-      msg.innerHTML = "일시적인 오류로 등록에 실패했습니다. 잠시 후 다시 시도해 주시거나, " +
-        `<a href="${mailFallback(data)}" style="text-decoration:underline">이메일로 바로 보내기</a>를 눌러주세요.`;
-    } finally {
-      submitBtn.disabled = false;
-      submitBtn.textContent = "협력 제안 등록하기 →";
-    }
-  });
-
   /* ---------- 접수 현황 ---------- */
   const boardBody = document.getElementById("boardBody");
 
@@ -813,12 +511,10 @@ ${d.message}
       boardBody.innerHTML =
         '<tr><td colspan="6" class="board-empty">' +
         '<b style="color:var(--ink);font-size:16px">협력 제안은 정상적으로 접수되고 있습니다.</b><br>' +
-        '위 양식으로 등록하시거나 <b style="color:var(--blue-deep)">' + ADMIN_EMAIL + '</b> 으로 보내주시면 대표이사가 직접 검토합니다.<br>' +
+        '<a href="https://partner.hasugulab.com/signup" style="color:var(--blue-deep);text-decoration:underline">파트너 가입 페이지</a>에서 등록하시거나 <b style="color:var(--blue-deep)">' + ADMIN_EMAIL + '</b> 으로 보내주시면 대표이사가 직접 검토합니다.<br>' +
         '<span style="font-size:13.5px;color:#94a9ba">접수 현황을 공개하는 게시판은 준비 중입니다.</span>' +
         '</td></tr>';
       ["statTotal", "statReview", "statDone"].forEach((id) => document.getElementById(id).textContent = "–");
-      const note = document.getElementById("submitNote");
-      if (note) note.textContent = "작성하신 내용이 메일로 정리되어 전송됩니다. 영업일 3~5일 내 연락드립니다.";
       return;
     }
     try {
